@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion 360 Professional Web CAD (Français)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {
+                fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                colors: {
+                    fusion: { dark: '#0b0e15', panel: '#141926', border: '#262d3e', accent: '#6c7dff', accentHover: '#8a9bff', selection: '#6fb1ff' },
+                    slate: { 50: '#f4f6fb', 100: '#e8ebf3', 200: '#cfd5e4', 300: '#aab2c8', 400: '#838ca6', 500: '#5f6982', 600: '#434b61', 700: '#2c3345', 800: '#1b2130', 850: '#171c29', 900: '#121722', 950: '#0b0e15' },
+                    orange: { 300: '#b9c3ff', 400: '#97a5ff', 500: '#6c7dff', 600: '#5566f0', 700: '#4453d4' },
+                    blue: { 300: '#a5cfff', 400: '#7db8ff', 500: '#5a9eff', 600: '#3f86f0' },
+                    amber: { 400: '#f4c36a', 500: '#ecab3a', 600: '#d58f1c' }
+                }
+            } }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js and Addons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2c3345; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #434b61; }
+        body { user-select: none; overflow: hidden; font-family: 'Inter', system-ui, -apple-system, sans-serif; letter-spacing: -0.005em; }
+        .glass { background: rgba(18, 23, 34, 0.80); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; box-shadow: 0 10px 32px rgba(0,0,0,0.38); }
+        .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; color: #aab2c8; }
+        .chip i { color: #8a9bff; } .chip b { color: #e8ebf3; font-weight: 600; }
+        /* menus */
+        .fusion-dropdown { display: none; position: absolute; left: 0; top: 100%; z-index: 100; min-width: 240px; padding: 6px; background: #121722; border: 1px solid #262d3e; border-radius: 12px; box-shadow: 0 18px 40px rgba(0,0,0,0.5); }
+        .fusion-dropdown.right { left: auto; right: 0; }
+        .relative.group:hover .fusion-dropdown, .relative.group:focus-within .fusion-dropdown { display: block; }
+        .mnu { padding: 5px 10px; border-radius: 8px; font-size: 12px; color: #cfd5e4; transition: background .15s; }
+        .mnu:hover { background: #1b2130; color: #fff; }
+        .mi { display: flex; align-items: center; gap: 10px; padding: 7px 10px; font-size: 12px; color: #cfd5e4; border-radius: 8px; }
+        .mi:hover { background: #1f2638; color: #fff; }
+        .mi i { width: 16px; text-align: center; color: #8aa0c8; }
+        .mi kbd { margin-left: auto; font-size: 10px; color: #5f6982; font-family: inherit; }
+        /* ruban d'outils */
+        .rgrp { display: flex; flex-direction: column; flex-shrink: 0; padding: 5px 6px 3px; background: rgba(27,33,48,0.55); border: 1px solid #232a3a; border-radius: 12px; }
+        .rgrp > div:first-child { display: flex; gap: 2px; }
+        .rgrp > div:last-child { text-align: center; font-size: 9px; letter-spacing: .09em; text-transform: uppercase; color: #5f6982; margin-top: 3px; }
+        .rb { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 54px; padding: 6px 6px 5px; border-radius: 9px; border: 1px solid transparent; font-size: 10.5px; color: #cfd5e4; transition: background .15s, border-color .15s; white-space: nowrap; }
+        .rb i { font-size: 15px; color: #8aa0c8; transition: color .15s; }
+        .rb:hover { background: #232a3c; }
+        .rb.border-orange-500 { background: rgba(108,125,255,0.18); border-color: #6c7dff; color: #fff; }
+        .rb.border-orange-500 i { color: #b9c3ff; }
+        .rb.danger i { color: #f08a93; } .rb.danger:hover { background: rgba(240,90,100,0.14); }
+        .vb { padding: 5px 11px; border-radius: 9px; font-size: 11px; color: #aab2c8; } .vb:hover { background: #232a3c; color: #fff; }
+        /* barre d'esquisse */
+        .sk-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 8px; background: rgba(35,42,60,0.7); border: 1px solid transparent; color: #dfe3ee; font-size: 11px; transition: background .15s; }
+        .sk-btn:hover { background: #2c3550; }
+        .sk-btn.active { background: #5566f0; border-color: #8a9bff; color: #fff; }
+        .sk-btn i { color: #9fb0d6; } .sk-btn.active i { color: #fff; }
+        #sketch-bar select, #sketch-bar input[type=number] { background: #1b2130; border: 1px solid #2c3345; border-radius: 7px; padding: 2px 6px; color: #dfe3ee; }
+        #sketch-bar input[type=checkbox] { accent-color: #6c7dff; }
+        .ic { width: 14px; height: 14px; fill: none; stroke: #9fb0d6; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+        .sk-btn.active .ic { stroke: #fff; }
+    </style>
+</head>
+<body class="bg-fusion-dark text-slate-200 h-screen flex flex-col">
+
+    <!-- TOP APPLICATION BAR -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-fusion-border h-12 flex items-center justify-between px-4 select-none relative z-40">
+        <div class="flex items-center gap-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-900/40"><i class="fa-solid fa-cube text-white text-xs"></i></div>
+                <span class="font-semibold text-sm tracking-tight text-slate-100">Fusion 360</span>
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">Web CAD · FR</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-0.5"><div class="relative group"><button class="mnu">Fichier</button><div class="fusion-dropdown"><a href="#" onclick="newDesign()" class="mi"><i class="fa-solid fa-file-circle-plus"></i><span>Nouveau design</span><kbd></kbd></a><a href="#" onclick="document.getElementById('file-in').click()" class="mi"><i class="fa-solid fa-file-import"></i><span>Importer (.obj, .stl)</span><kbd></kbd></a><a href="#" onclick="exportOBJ()" class="mi"><i class="fa-solid fa-file-export"></i><span>Exporter en OBJ</span><kbd></kbd></a><a href="#" onclick="exportSTL()" class="mi"><i class="fa-solid fa-download"></i><span>Exporter en STL</span><kbd></kbd></a></div></div><div class="relative group"><button class="mnu">Édition</button><div class="fusion-dropdown"><a href="#" onclick="undo()" class="mi"><i class="fa-solid fa-rotate-left"></i><span>Annuler</span><kbd>Ctrl+Z</kbd></a><a href="#" onclick="redo()" class="mi"><i class="fa-solid fa-rotate-right"></i><span>Rétablir</span><kbd>Ctrl+Y</kbd></a><a href="#" onclick="duplicateSelected()" class="mi"><i class="fa-solid fa-clone"></i><span>Dupliquer</span><kbd>Ctrl+D</kbd></a><a href="#" onclick="deleteSelected()" class="mi"><i class="fa-solid fa-trash"></i><span>Supprimer la sélection</span><kbd>Suppr</kbd></a><a href="#" onclick="clearScene()" class="mi"><i class="fa-solid fa-eraser"></i><span>Tout effacer</span><kbd></kbd></a></div></div><div class="relative group"><button class="mnu">Créer</button><div class="fusion-dropdown"><a href="#" onclick="createPrimitive('box')" class="mi"><i class="fa-solid fa-cube"></i><span>Boîte</span><kbd></kbd></a><a href="#" onclick="createPrimitive('cylinder')" class="mi"><i class="fa-solid fa-database"></i><span>Cylindre</span><kbd></kbd></a><a href="#" onclick="createPrimitive('sphere')" class="mi"><i class="fa-solid fa-circle"></i><span>Sphère</span><kbd></kbd></a><a href="#" onclick="createPrimitive('cone')" class="mi"><i class="fa-solid fa-mountain"></i><span>Cône</span><kbd></kbd></a><a href="#" onclick="createPrimitive('torus')" class="mi"><i class="fa-solid fa-ring"></i><span>Tore</span><kbd></kbd></a><a href="#" onclick="startSketch()" class="mi"><i class="fa-solid fa-pen-nib"></i><span>Esquisse…</span><kbd></kbd></a><a href="#" onclick="openExtrude()" class="mi"><i class="fa-solid fa-up-long"></i><span>Extruder une esquisse</span><kbd></kbd></a></div></div><div class="relative group"><button class="mnu">Modifier</button><div class="fusion-dropdown"><a href="#" onclick="setTool('translate')" class="mi"><i class="fa-solid fa-arrows-up-down-left-right"></i><span>Déplacer</span><kbd>W</kbd></a><a href="#" onclick="setTool('rotate')" class="mi"><i class="fa-solid fa-rotate"></i><span>Pivoter</span><kbd>E</kbd></a><a href="#" onclick="setTool('scale')" class="mi"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span>Mettre à l'échelle</span><kbd>R</kbd></a></div></div><div class="relative group"><button class="mnu">Affichage</button><div class="fusion-dropdown"><a href="#" onclick="toggleDims()" class="mi"><i class="fa-solid fa-ruler-combined"></i><span>Cotes</span><kbd></kbd></a><a href="#" onclick="toggleWire()" class="mi"><i class="fa-solid fa-border-all"></i><span>Fil de fer</span><kbd></kbd></a><a href="#" onclick="fitView()" class="mi"><i class="fa-solid fa-expand"></i><span>Ajuster la vue</span><kbd></kbd></a></div></div><div class="relative group"><button class="mnu">Inspecter</button><div class="fusion-dropdown"><a href="#" onclick="measureBody()" class="mi"><i class="fa-solid fa-ruler"></i><span>Mesurer le corps</span><kbd></kbd></a></div></div></nav>
+        </div>
+        <div class="hidden lg:flex items-center gap-2 text-xs text-slate-300 px-3 py-1 rounded-lg bg-slate-800/70 border border-slate-700/60"><i class="fa-solid fa-file-lines text-orange-400"></i><span id="doc-title">Sans_titre_1*</span></div>
+        <div class="flex items-center gap-2">
+            <button onclick="document.getElementById('file-in').click()" class="flex items-center gap-2 text-xs text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"><i class="fa-solid fa-file-import text-orange-400"></i>Importer</button>
+            <div class="relative group"><button class="flex items-center gap-2 text-xs font-medium text-white px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 shadow-lg shadow-indigo-900/30"><i class="fa-solid fa-file-export"></i>Exporter<i class="fa-solid fa-chevron-down text-[9px] opacity-70"></i></button><div class="fusion-dropdown right"><a href="#" onclick="exportOBJ()" class="mi"><i class="fa-solid fa-file-export"></i><span>Format OBJ</span></a><a href="#" onclick="exportSTL()" class="mi"><i class="fa-solid fa-download"></i><span>Format STL (impression 3D)</span></a></div></div>
+            <button onclick="showModal('Aide & Raccourcis', '• Clic gauche : Sélectionner\n• Orbite : Glisser-déposer clic gauche\n• Panoramique : Maj + Clic gauche\n• Zoom : Molette de la souris\n• Déplacer / Pivoter / Échelle : W / E / R (Q = sélection)\n• Supprimer : touche Suppr · Dupliquer : Ctrl+D · Annuler / Rétablir : Ctrl+Z / Ctrl+Y\n• Import : bouton Importer ou glisser-déposer un .obj / .stl\n• Cotes : cliquez une cote d\'esquisse pour la modifier\n• Esquisse : L Ligne · R Rectangle · C Cercle · P Polygone · S Sélection\n• Esquisse : Entrée = terminer la ligne · Échap = annuler · Ctrl+Z = annuler\n• Esquisse : tapez une valeur puis Entrée pour une cote exacte\n• Sélection Face / Arête : cliquez, puis utilisez les boutons d\'action (esquisse sur la face, arrondir, aplatir)')" class="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition" title="Aide & raccourcis"><i class="fa-solid fa-circle-question"></i></button>
+        </div>
+    </header>
+
+    <!-- RUBAN D'OUTILS -->
+<div class="bg-slate-900/60 border-b border-fusion-border px-3 py-2 flex items-stretch gap-2 overflow-x-auto z-30 select-none"><div class="rgrp"><div><button onclick="createPrimitive('box')" class="rb"><i class="fa-solid fa-cube"></i><span>Boîte</span></button><button onclick="createPrimitive('cylinder')" class="rb"><i class="fa-solid fa-database"></i><span>Cylindre</span></button><button onclick="createPrimitive('sphere')" class="rb"><i class="fa-solid fa-circle"></i><span>Sphère</span></button><button onclick="createPrimitive('cone')" class="rb"><i class="fa-solid fa-mountain"></i><span>Cône</span></button><button onclick="createPrimitive('torus')" class="rb"><i class="fa-solid fa-ring"></i><span>Tore</span></button></div><div>Créer</div></div><div class="rgrp"><div><button onclick="startSketch()" class="rb" title="Choisir un plan et dessiner"><i class="fa-solid fa-pen-nib"></i><span>Esquisse</span></button><button onclick="openExtrude()" class="rb"><i class="fa-solid fa-up-long"></i><span>Extruder</span></button></div><div>Esquisse</div></div><div class="rgrp"><div><button onclick="setTool('none')" id="tool-none" class="rb" title="Orbite / sélection (Q)"><i class="fa-solid fa-hand"></i><span>Orbite</span></button><button onclick="setTool('translate')" id="tool-translate" class="rb" title="W"><i class="fa-solid fa-arrows-up-down-left-right"></i><span>Déplacer</span></button><button onclick="setTool('rotate')" id="tool-rotate" class="rb" title="E"><i class="fa-solid fa-rotate"></i><span>Pivoter</span></button><button onclick="setTool('scale')" id="tool-scale" class="rb" title="R"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span>Échelle</span></button><button onclick="duplicateSelected()" class="rb" title="Ctrl+D"><i class="fa-solid fa-clone"></i><span>Dupliquer</span></button><button onclick="deleteSelected()" class="rb danger" title="Suppr"><i class="fa-solid fa-trash"></i><span>Supprimer</span></button></div><div>Modifier</div></div><div class="rgrp"><div><button onclick="setSelMode('body')" id="sel-body" class="rb border-orange-500"><i class="fa-solid fa-cube"></i><span>Corps</span></button><button onclick="setSelMode('face')" id="sel-face" class="rb"><i class="fa-solid fa-square"></i><span>Face</span></button><button onclick="setSelMode('edge')" id="sel-edge" class="rb"><i class="fa-solid fa-draw-polygon"></i><span>Arête</span></button><button onclick="setSelMode('sketch')" id="sel-sketch" class="rb"><i class="fa-solid fa-pen-nib"></i><span>Esquisse</span></button></div><div>Sélection</div></div><div class="rgrp"><div><button onclick="toggleDims()" id="btn-dims" class="rb border-orange-500"><i class="fa-solid fa-ruler-combined"></i><span>Cotes</span></button><button onclick="toggleWire()" id="btn-wire" class="rb"><i class="fa-solid fa-border-all"></i><span>Fil de fer</span></button><button onclick="toggleSnap()" id="btn-snap" class="rb" title="1 mm / 15° / 0,1"><i class="fa-solid fa-magnet"></i><span>Aimant</span></button><button onclick="fitView()" class="rb"><i class="fa-solid fa-expand"></i><span>Ajuster</span></button><button onclick="measureBody()" class="rb"><i class="fa-solid fa-ruler"></i><span>Mesurer</span></button></div><div>Affichage</div></div><div class="rgrp"><div><button onclick="undo()" class="rb"><i class="fa-solid fa-rotate-left"></i><span>Annuler</span></button><button onclick="redo()" class="rb"><i class="fa-solid fa-rotate-right"></i><span>Rétablir</span></button></div><div>Historique</div></div><div class="rgrp"><div><button onclick="document.getElementById('file-in').click()" class="rb"><i class="fa-solid fa-file-import"></i><span>Importer</span></button><button onclick="exportOBJ()" class="rb"><i class="fa-solid fa-file-export"></i><span>Export OBJ</span></button><button onclick="exportSTL()" class="rb"><i class="fa-solid fa-download"></i><span>Export STL</span></button></div><div>Fichier</div></div></div>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- LEFT PANEL: BROWSER / DESIGN TREE -->
+        <aside class="w-64 bg-slate-900/95 border-r border-fusion-border flex flex-col z-10 select-none">
+            <div class="px-3 py-2 bg-slate-800 border-b border-fusion-border flex items-center justify-between text-xs font-semibold text-slate-300">
+                <span class="flex items-center space-x-1.5">
+                    <i class="fa-solid fa-folder-tree text-orange-400"></i>
+                    <span>Navigateur / Arborescence</span>
+                </span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 text-xs space-y-1">
+                <div class="font-bold text-slate-200 flex items-center space-x-1.5 py-1 px-2 bg-slate-800/60 rounded">
+                    <i class="fa-solid fa-cube text-orange-400"></i>
+                    <span id="root-tree-name">Sans_titre_1 (Racine)</span>
+                </div>
+                <div class="pl-3 py-1 space-y-1">
+                    <div class="text-slate-400 flex items-center space-x-1.5 cursor-pointer hover:text-white">
+                        <i class="fa-solid fa-eye text-[10px]"></i>
+                        <i class="fa-solid fa-globe text-blue-400"></i>
+                        <span>Origine</span>
+                    </div>
+                    <div class="pl-5 space-y-1 text-[11px] text-slate-500">
+                        <div class="hover:text-orange-400 cursor-pointer" title="Créer une esquisse sur ce plan" onclick="startSketch('xy')"><i class="fa-solid fa-vector-square mr-1.5" style="color:#5a9eff"></i>Plan XY</div>
+                        <div class="hover:text-orange-400 cursor-pointer" title="Créer une esquisse sur ce plan" onclick="startSketch('yz')"><i class="fa-solid fa-vector-square mr-1.5" style="color:#f0707a"></i>Plan YZ</div>
+                        <div class="hover:text-orange-400 cursor-pointer" title="Créer une esquisse sur ce plan" onclick="startSketch('xz')"><i class="fa-solid fa-vector-square mr-1.5" style="color:#5fd4a0"></i>Plan XZ</div>
+                    </div>
+                </div>
+                <div class="pl-3 py-1 space-y-1">
+                    <div class="text-slate-300 font-medium flex items-center space-x-1.5">
+                        <i class="fa-solid fa-shapes text-amber-400"></i>
+                        <span>Corps (<span id="body-count">0</span>)</span>
+                    </div>
+                    <div id="bodies-tree-list" class="pl-4 space-y-1">
+                        <!-- Empty at start -->
+                    </div>
+                </div>
+                <div class="pl-3 py-1 space-y-1">
+                    <div class="text-slate-300 font-medium flex items-center space-x-1.5">
+                        <i class="fa-solid fa-pen-nib text-blue-400"></i>
+                        <span>Esquisses (<span id="sketch-count">0</span>)</span>
+                    </div>
+                    <div id="sketches-tree-list" class="pl-4 space-y-1"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER VIEWPORT (Infinite Full Grid & No Default Object) -->
+        <main class="flex-1 relative overflow-hidden" id="viewport-container" style="background: radial-gradient(120% 95% at 50% 30%, #1b2336 0%, #0f1420 55%, #0a0d14 100%)">
+            <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
+
+            <!-- Vues rapides (bas gauche) -->
+            <div class="absolute bottom-3 left-3 z-20 glass flex items-center p-1 gap-0.5">
+                <button onclick="setViewAngle('home')" class="vb" title="Vue par défaut"><i class="fa-solid fa-house mr-1.5 text-orange-400"></i>Accueil</button>
+                <button onclick="setViewAngle('top')" class="vb" title="Vue de dessus">Dessus</button>
+                <button onclick="setViewAngle('front')" class="vb" title="Vue de face">Face</button>
+                <button onclick="setViewAngle('right')" class="vb" title="Vue de droite">Droite</button>
+            </div>
+
+            <!-- État (bas droite) -->
+            <div class="absolute bottom-3 right-3 z-10 glass flex items-center gap-1 px-1 py-1 text-[11px] pointer-events-none">
+                <span class="chip"><i class="fa-solid fa-screwdriver-wrench"></i><b id="hud-tool">Orbite / Sélection</b></span>
+                <span class="chip"><i class="fa-solid fa-bullseye"></i><b id="hud-selection">Aucun</b></span>
+                <span class="chip"><i class="fa-solid fa-border-all"></i>Grille <b id="hud-grid">1 mm</b></span>
+            </div>
+
+            <div id="dim-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-20"></div>
+            <input type="file" id="file-in" accept=".obj,.stl" multiple class="hidden" onchange="importFiles(this.files);this.value=''">
+            <div id="float-panel" class="hidden absolute top-3 left-1/2 -translate-x-1/2 glass p-3 text-xs shadow-xl z-30 w-80"></div>
+
+            <div id="sketch-bar" class="hidden absolute top-3 left-1/2 -translate-x-1/2 max-w-[96%] glass p-2 text-[11px] text-slate-300 z-30 flex flex-col gap-2">
+                <div class="flex items-center flex-wrap gap-1">
+                    <span id="sk-title" class="font-semibold text-orange-300 mr-2 px-2.5 py-1 rounded-lg bg-orange-500/10">Esquisse</span>
+                    <button class="sk-btn" data-sk="line" onclick="skTool('line')"><i class="fa-solid fa-minus"></i>Ligne</button><button class="sk-btn" data-sk="rect" onclick="skTool('rect')"><i class="fa-regular fa-square"></i>Rectangle</button><button class="sk-btn" data-sk="circle" onclick="skTool('circle')"><i class="fa-regular fa-circle"></i>Cercle</button><button class="sk-btn" data-sk="arc" onclick="skTool('arc')"><i class="fa-solid fa-bezier-curve"></i>Arc</button><button class="sk-btn" data-sk="poly" onclick="skTool('poly')"><svg viewBox="0 0 16 16" class="ic"><polygon points="8,1.5 14,5 14,11 8,14.5 2,11 2,5"/></svg>Polygone</button>
+                    <span class="w-px h-5 bg-slate-700 mx-1"></span>
+                    <button class="sk-btn" data-sk="fillet" onclick="skTool('fillet')" title="Arrondir un coin"><svg viewBox="0 0 16 16" class="ic"><path d="M3 2 V8 Q3 13 8 13 H14"/></svg>Congé</button><button class="sk-btn" data-sk="chamfer" onclick="skTool('chamfer')" title="Aplatir un coin"><svg viewBox="0 0 16 16" class="ic"><path d="M3 2 V8 L8 13 H14"/></svg>Chanfrein</button><button class="sk-btn" data-sk="select" onclick="skTool('select')"><i class="fa-solid fa-arrow-pointer"></i>Sélection</button>
+                    <span class="flex-1 min-w-[12px]"></span>
+                    <button class="sk-btn" onclick="skUndo()" title="Annuler (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+                    <button class="sk-btn" onclick="skDeleteSel()" title="Supprimer l'élément sélectionné"><i class="fa-solid fa-eraser"></i></button>
+                    <button class="sk-btn" onclick="skToggleOrbit()" title="Autoriser la rotation 3D de la vue"><i class="fa-solid fa-cube"></i>Orbite</button>
+                    <button class="sk-btn" onclick="skRealign()" title="Revenir face au plan"><i class="fa-solid fa-crosshairs"></i></button>
+                    <button onclick="endSketch(true)" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition"><i class="fa-solid fa-check mr-1"></i>Terminer</button>
+                    <button onclick="endSketch(false)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-300 transition" title="Abandonner l'esquisse"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-slate-400">
+                    <label class="flex items-center gap-1.5"><input type="checkbox" id="sk-snap" checked onchange="skOpt()"> Grille
+                        <select id="sk-step" onchange="skOpt()"><option value="auto" selected>Auto</option><option value="1">1 mm</option><option value="2">2 mm</option><option value="5">5 mm</option><option value="10">10 mm</option></select></label>
+                    <label class="flex items-center gap-1.5"><input type="checkbox" id="sk-ortho" onchange="skOpt()"> Ortho</label>
+                    <label class="flex items-center gap-1.5" title="Ligne de construction (non extrudée)"><input type="checkbox" id="sk-constr" onchange="skOpt()"> Construction</label>
+                    <label class="flex items-center gap-1.5">Rectangle <select id="sk-rect" onchange="skOpt()"><option value="2pts">2 points</option><option value="center">Centre</option><option value="3pts">3 points</option></select></label>
+                    <label class="flex items-center gap-1.5">Arc <select id="sk-arc" onchange="skOpt()"><option value="3pts">3 points</option><option value="center">Centre</option></select></label>
+                    <label class="flex items-center gap-1.5">Côtés <input type="number" id="sk-sides" value="6" min="3" max="64" onchange="skOpt()" class="w-14"></label>
+                    <label class="flex items-center gap-1.5" title="Hauteur de l'esquisse le long de la normale du plan"><i class="fa-solid fa-arrows-up-down text-orange-400"></i>Hauteur <input type="number" id="sk-off" step="any" value="0" onchange="skHeightSet('active', this.value)" class="w-16"> mm</label>
+                </div>
+            </div>
+
+            <div id="sel-actions" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 glass px-3 py-2 text-xs shadow-xl z-30 flex items-center gap-2"></div>
+
+            <div id="sk-hud" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 glass px-3 py-2 text-xs shadow-xl z-30 flex items-center gap-3">
+                <span id="sk-live" class="text-slate-300 font-mono min-w-[11rem]"></span>
+                <input id="sk-input" type="text" autocomplete="off" placeholder="Cote exacte + Entrée" class="w-40 bg-slate-800 border border-fusion-border rounded px-2 py-1 text-slate-200">
+            </div>
+        </main>
+
+        <!-- RIGHT PANEL: INSPECTOR / PROPERTIES -->
+        <aside class="w-72 bg-slate-900/95 border-l border-fusion-border flex flex-col z-10 select-none">
+            <div class="px-3 py-2 bg-slate-800 border-b border-fusion-border flex items-center justify-between text-xs font-semibold text-slate-300">
+                <span class="flex items-center space-x-1.5">
+                    <i class="fa-solid fa-sliders text-orange-400"></i>
+                    <span>Inspecteur & Propriétés</span>
+                </span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-3 text-xs space-y-4" id="inspector-content">
+                <div class="text-slate-500 text-center py-10">
+                    <i class="fa-solid fa-hand-pointer text-2xl mb-2 text-slate-600"></i>
+                    <p>Sélectionnez un corps 3D dans la zone de dessin ou dans l'arborescence pour éditer ses paramètres.</p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- BOTTOM PANEL: PARAMETRIC TIMELINE -->
+    <footer class="bg-slate-900 border-t border-fusion-border h-16 flex flex-col z-20 select-none">
+        <div class="px-3 py-1 bg-slate-850 border-b border-fusion-border flex items-center justify-between text-[11px] text-slate-400">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-clock-rotate-left text-orange-400"></i>
+                <span class="font-semibold text-slate-300">Historique Paramétrique (Timeline)</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="playTimeline()" class="hover:text-white" title="Rejouer l'historique"><i class="fa-solid fa-play text-xs text-orange-400"></i></button>
+                <span>Étapes : <span id="timeline-count">1</span></span>
+            </div>
+        </div>
+        <div class="flex-1 flex items-center px-4 space-x-2 overflow-x-auto" id="timeline-steps">
+            <div class="flex items-center space-x-2 text-slate-300 text-xs bg-slate-800 px-2.5 py-1 rounded border border-fusion-border flex-shrink-0">
+                <div class="w-6 h-6 rounded-full bg-orange-500/15 text-orange-300 flex items-center justify-center text-[10px]"><i class="fa-solid fa-flag"></i></div>
+                <span>Initialisation de la scène</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL POPUP -->
+    <div id="app-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-fusion-border rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-slate-100 text-base flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-info text-orange-400"></i>
+                    <span>Notification</span>
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p id="modal-desc" class="text-slate-300 text-sm whitespace-pre-line leading-relaxed"></p>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal()" class="bg-orange-600 hover:bg-orange-500 text-white text-xs px-4 py-2 rounded font-medium transition shadow">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT CAD & THREE.JS LOGIC -->
+    <script>
+        let scene, camera, renderer, orbitControls, transformControls;
+        let objectsList = [];
+        let selectedObject = null;
+        let currentTool = 'none';
+        let timelineHistory = [{ name: 'Initialisation de la scène', type: 'system' }];
+
+        function initCAD() {
+            const container = document.getElementById('viewport-container');
+            
+            scene = new THREE.Scene();
+            scene.background = null;
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 50000);
+            camera.position.set(25, 20, 25);
+
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webgl-canvas'), antialias: true, alpha: true });
+            renderer.setClearColor(0x000000, 0);
+            renderer.setSize(container.clientWidth, container.clientHeight, false);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+
+            orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+            orbitControls.enableDamping = true;
+            orbitControls.dampingFactor = 0.05;
+            orbitControls.minDistance = 0.5;
+
+            transformControls = new THREE.TransformControls(camera, renderer.domElement);
+            transformControls.size = 0.75;
+            scene.add(transformControls);
+
+            transformControls.addEventListener('dragging-changed', (event) => {
+                orbitControls.enabled = !event.value;
+            });
+
+            transformControls.addEventListener('mouseUp', () => { if (selectedObject) addTimelineStep(`Transformation de ${selectedObject.name}`); });
+            transformControls.addEventListener('change', () => {
+                if (selectedObject) {
+                    updateInspectorValues();
+                }
+            });
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight1.position.set(30, 50, 30);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x94a3b8, 0.4);
+            dirLight2.position.set(-30, -20, -30);
+            scene.add(dirLight2);
+
+            // Full Infinite Grid across the viewport
+            groundGrid = makeGrid();
+            scene.add(groundGrid);
+            setGridPlane(null);
+
+            yAxis = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 3000, 0)]), new THREE.LineBasicMaterial({ color: 0x66d9a6, transparent: true, opacity: 0.85 }));
+            scene.add(yAxis);
+
+            window.addEventListener('resize', onWindowResize);
+            new ResizeObserver(onWindowResize).observe(container); // garde le rendu à la bonne proportion (cercles ronds)
+
+            // Scene starts completely empty (No objects spawned on startup)
+            initInput();
+            setTool('none');
+            animate();
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('viewport-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight, false);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            orbitControls.update();
+            updateGrid();
+            if (sketchMode && sketch) skTessCheck();
+            updateDims();
+            renderer.render(scene, camera);
+        }
+
+        function newDesign() {
+            clearScene();
+            showModal('Nouveau Design', 'Espace de travail réinitialisé avec succès.');
+        }
+
+        function createPrimitive(type, customParams = null, customName = null) {
+            if (sketchMode || pickingPlane) { showModal('Esquisse en cours', 'Terminez ou abandonnez l\'esquisse avant de créer un corps.'); return; }
+            let geometry;
+            let defaultParams = {};
+
+            if (type === 'box') {
+                defaultParams = customParams || { width: 10, height: 10, depth: 10 };
+                geometry = new THREE.BoxGeometry(defaultParams.width, defaultParams.height, defaultParams.depth);
+            } else if (type === 'cylinder') {
+                defaultParams = customParams || { radiusTop: 5, radiusBottom: 5, height: 12 };
+                geometry = new THREE.CylinderGeometry(defaultParams.radiusTop, defaultParams.radiusBottom, defaultParams.height, 32);
+            } else if (type === 'sphere') {
+                defaultParams = customParams || { radius: 6 };
+                geometry = new THREE.SphereGeometry(defaultParams.radius, 32, 32);
+            } else if (type === 'cone') {
+                defaultParams = customParams || { radius: 6, height: 12 };
+                geometry = new THREE.ConeGeometry(defaultParams.radius, defaultParams.height, 32);
+            } else if (type === 'torus') {
+                defaultParams = customParams || { radius: 7, tube: 2.5 };
+                geometry = new THREE.TorusGeometry(defaultParams.radius, defaultParams.tube, 16, 100);
+            }
+
+            const color = getRandomColor();
+            const material = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.3,
+                metalness: 0.2
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            if (type === 'box') mesh.position.y = defaultParams.height / 2;
+            else if (type === 'cylinder' || type === 'cone') mesh.position.y = defaultParams.height / 2;
+            else mesh.position.y = defaultParams.radius || 6;
+
+            // évite que les nouveaux corps se superposent
+            for (let t = 0; t < 50 && objectsList.some(o => new THREE.Box3().setFromObject(mesh).intersectsBox(new THREE.Box3().setFromObject(o.mesh))); t++) mesh.position.x += 12;
+            scene.add(mesh);
+            const id = 'Body_' + (objectsList.length + 1);
+            const name = customName || (type.charAt(0).toUpperCase() + type.slice(1) + ' ' + (objectsList.length + 1));
+
+            const cadObject = {
+                id: id,
+                name: name,
+                type: type,
+                mesh: mesh,
+                params: defaultParams,
+                color: color
+            };
+
+            objectsList.push(cadObject);
+            addTimelineStep(`Création de ${name}`);
+            updateBrowserTree();
+            selectObject(cadObject);
+        }
+
+        function getRandomColor() {
+            // palette harmonieuse : teintes variées, saturation et luminosité constantes
+            return new THREE.Color().setHSL(Math.random(), 0.42, 0.62).getHex();
+        }
+
+        function selectObject(obj) {
+            selectedObject = obj;
+            document.getElementById('hud-selection').innerText = obj.name;
+            if (['translate', 'rotate', 'scale'].includes(currentTool)) {
+                transformControls.setMode(currentTool);
+                transformControls.attach(obj.mesh);
+            } else transformControls.detach();
+            updateInspectorPanel();
+            updateBrowserTree();
+        }
+
+        function deselect() {
+            clearSub();
+            selectedObject = null;
+            transformControls.detach();
+            document.getElementById('hud-selection').innerText = 'Aucun';
+            updateBrowserTree();
+            resetInspector();
+        }
+
+        function setTool(toolName) {
+            if (sketchMode) return;
+            currentTool = toolName;
+            setHud(({ none: 'Orbite / Sélection', translate: 'Déplacer', rotate: 'Pivoter', scale: 'Échelle' })[toolName]);
+            ['translate', 'rotate', 'scale', 'none'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (btn) btn.classList.toggle('border-orange-500', t === toolName), btn && btn.classList.toggle('bg-slate-700', t === toolName);
+            });
+            if (selectedObject) selectObject(selectedObject);
+        }
+
+        let snapOn = false;
+        function toggleSnap() {
+            snapOn = !snapOn;
+            transformControls.setTranslationSnap(snapOn ? 1 : null);
+            transformControls.setRotationSnap(snapOn ? THREE.MathUtils.degToRad(15) : null);
+            transformControls.setScaleSnap(snapOn ? 0.1 : null);
+            document.getElementById('btn-snap').classList.toggle('border-orange-500', snapOn);
+        }
+        function setHud(t) { document.getElementById('hud-tool').innerText = t; }
+
+        function deleteSelected() {
+            if (!selectedObject) {
+                showModal('Sélection requise', 'Veuillez sélectionner un corps 3D à supprimer.');
+                return;
+            }
+
+            scene.remove(selectedObject.mesh);
+            selectedObject.mesh.geometry.dispose();
+            selectedObject.mesh.material.dispose();
+
+            objectsList = objectsList.filter(o => o !== selectedObject);
+            transformControls.detach();
+            addTimelineStep(`Suppression de ${selectedObject.name}`);
+            selectedObject = null;
+
+            document.getElementById('hud-selection').innerText = 'Aucun';
+            updateBrowserTree();
+            resetInspector();
+        }
+
+        function clearScene() {
+            objectsList.forEach(o => {
+                scene.remove(o.mesh);
+                o.mesh.geometry.dispose();
+                o.mesh.material.dispose();
+            });
+            objectsList = [];
+            selectedObject = null;
+            transformControls.detach();
+            document.getElementById('hud-selection').innerText = 'Aucun';
+            updateBrowserTree();
+            resetInspector();
+            addTimelineStep('Effacement de la scène');
+        }
+
+        function updateInspectorPanel() {
+            if (!selectedObject) return;
+            const container = document.getElementById('inspector-content');
+
+            let paramInputsHTML = '';
+            const p = selectedObject.params;
+
+            if (selectedObject.type === 'box') {
+                paramInputsHTML = `
+                    <div><label class="text-slate-400">Largeur (X)</label><input type="number" id="param-w" value="${p.width}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                    <div><label class="text-slate-400">Hauteur (Y)</label><input type="number" id="param-h" value="${p.height}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                    <div><label class="text-slate-400">Profondeur (Z)</label><input type="number" id="param-d" value="${p.depth}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                `;
+            } else if (selectedObject.type === 'cylinder') {
+                paramInputsHTML = `
+                    <div><label class="text-slate-400">Rayon</label><input type="number" id="param-r" value="${p.radiusTop}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                    <div><label class="text-slate-400">Hauteur</label><input type="number" id="param-h" value="${p.height}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                `;
+            } else if (selectedObject.type === 'sphere') {
+                paramInputsHTML = `
+                    <div><label class="text-slate-400">Rayon</label><input type="number" id="param-r" value="${p.radius}" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>
+                `;
+            } else {
+                paramInputsHTML = extraParams(selectedObject);
+            }
+
+            const hexColor = '#' + selectedObject.mesh.material.color.getHexString();
+
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-slate-400 text-[10px] uppercase font-semibold">Nom du corps</label>
+                        <input type="text" id="inspector-name" value="${esc(selectedObject.name)}" onchange="updateObjectName(this.value)" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200">
+                    </div>
+                    <div class="border-t border-fusion-border pt-3">
+                        <span class="text-slate-400 text-[10px] uppercase font-semibold">Dimensions</span>
+                        <div class="space-y-2 mt-2">${paramInputsHTML}</div>
+                    </div>
+                    <div class="border-t border-fusion-border pt-3">
+                        <span class="text-slate-400 text-[10px] uppercase font-semibold">Position (X, Y, Z)</span>
+                        <div class="grid grid-cols-3 gap-2 mt-1">
+                            <input type="number" id="pos-x" value="${selectedObject.mesh.position.x.toFixed(1)}" onchange="updatePosition()" class="bg-slate-800 border border-fusion-border rounded px-1.5 py-1 text-slate-200">
+                            <input type="number" id="pos-y" value="${selectedObject.mesh.position.y.toFixed(1)}" onchange="updatePosition()" class="bg-slate-800 border border-fusion-border rounded px-1.5 py-1 text-slate-200">
+                            <input type="number" id="pos-z" value="${selectedObject.mesh.position.z.toFixed(1)}" onchange="updatePosition()" class="bg-slate-800 border border-fusion-border rounded px-1.5 py-1 text-slate-200">
+                        </div>
+                    </div>
+                    ${transformHTML(selectedObject)}
+                    <div class="border-t border-fusion-border pt-3">
+                        <span class="text-slate-400 text-[10px] uppercase font-semibold">Apparence du matériau</span>
+                        <div class="flex items-center space-x-3 mt-2">
+                            <input type="color" id="inspector-color" value="${hexColor}" onchange="updateMaterialColor(this.value)" class="w-8 h-8 rounded bg-slate-800 border border-fusion-border cursor-pointer">
+                            <span class="text-slate-300">Matériau</span></div>${matHTML(selectedObject)}<div class="hidden">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateInspectorValues() {
+            if (!selectedObject) return;
+            refreshTransformFields();
+            const px = document.getElementById('pos-x');
+            const py = document.getElementById('pos-y');
+            const pz = document.getElementById('pos-z');
+            if (px && py && pz) {
+                px.value = selectedObject.mesh.position.x.toFixed(1);
+                py.value = selectedObject.mesh.position.y.toFixed(1);
+                pz.value = selectedObject.mesh.position.z.toFixed(1);
+            }
+        }
+
+        function updateSelectedGeometry() {
+            if (!selectedObject) return;
+            const type = selectedObject.type;
+            let newGeo;
+
+            if (type === 'box') {
+                const w = parseFloat(document.getElementById('param-w').value) || 1;
+                const h = parseFloat(document.getElementById('param-h').value) || 1;
+                const d = parseFloat(document.getElementById('param-d').value) || 1;
+                selectedObject.params = { width: w, height: h, depth: d };
+                newGeo = new THREE.BoxGeometry(w, h, d);
+            } else if (type === 'cylinder') {
+                const r = parseFloat(document.getElementById('param-r').value) || 1;
+                const h = parseFloat(document.getElementById('param-h').value) || 1;
+                selectedObject.params = { radiusTop: r, radiusBottom: r, height: h };
+                newGeo = new THREE.CylinderGeometry(r, r, h, 32);
+            } else if (type === 'sphere') {
+                const r = parseFloat(document.getElementById('param-r').value) || 1;
+                selectedObject.params = { radius: r };
+                newGeo = new THREE.SphereGeometry(r, 32, 32);
+            }
+
+            else if (type === 'cone') {
+                const r = parseFloat(document.getElementById('param-r').value) || 1;
+                const h = parseFloat(document.getElementById('param-h').value) || 1;
+                selectedObject.params = { radius: r, height: h };
+                newGeo = new THREE.ConeGeometry(r, h, 32);
+            } else if (type === 'torus') {
+                const r = parseFloat(document.getElementById('param-r').value) || 1;
+                const t = parseFloat(document.getElementById('param-t').value) || 0.5;
+                selectedObject.params = { radius: r, tube: t };
+                newGeo = new THREE.TorusGeometry(r, t, 16, 100);
+            } else if (type === 'extrude') {
+                const d = Math.abs(parseFloat(document.getElementById('param-d').value)) || 1;
+                const m = document.getElementById('param-m').value;
+                const bv = Math.max(0, parseFloat(document.getElementById('param-bv').value) || 0), bt = document.getElementById('param-bt').value;
+                selectedObject.params = { dist: d, mode: m, bev: bv, bt };
+                newGeo = extrudeGeo(selectedObject.sk, d, m, bv, bt, selectedObject.excl);
+            }
+
+            if (newGeo) {
+                selectedObject.mesh.geometry.dispose();
+                selectedObject.mesh.geometry = newGeo;
+                addTimelineStep(`Modification de ${selectedObject.name}`);
+            }
+        }
+
+        function updateObjectName(newName) {
+            if (!selectedObject) return;
+            selectedObject.name = newName;
+            updateBrowserTree();
+            document.getElementById('hud-selection').innerText = newName;
+        }
+
+        function updatePosition() {
+            if (!selectedObject) return;
+            const x = parseFloat(document.getElementById('pos-x').value) || 0;
+            const y = parseFloat(document.getElementById('pos-y').value) || 0;
+            const z = parseFloat(document.getElementById('pos-z').value) || 0;
+            selectedObject.mesh.position.set(x, y, z);
+        }
+
+        function updateMaterialColor(hex) {
+            if (!selectedObject) return;
+            selectedObject.mesh.material.color.set(hex);
+        }
+
+        function resetInspector() {
+            document.getElementById('inspector-content').innerHTML = `
+                <div class="text-slate-500 text-center py-10">
+                    <i class="fa-solid fa-hand-pointer text-2xl mb-2 text-slate-600"></i>
+                    <p>Sélectionnez un corps 3D dans la zone de dessin ou dans l'arborescence pour éditer ses paramètres.</p>
+                </div>
+            `;
+        }
+
+        function updateBrowserTree() {
+            const listEl = document.getElementById('bodies-tree-list');
+            document.getElementById('body-count').innerText = objectsList.length;
+
+            listEl.innerHTML = '';
+            objectsList.forEach((obj, idx) => {
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between py-1 px-2 rounded cursor-pointer transition ${selectedObject === obj ? 'bg-blue-600/30 text-white border border-blue-500/40' : 'hover:bg-slate-800 text-slate-300'}`;
+                div.innerHTML = `
+                    <div class="flex items-center space-x-1.5 truncate">
+                        <i class="fa-solid fa-${BODY_ICON[obj.type] || 'cube'}" style="color:#${obj.mesh.material.color.getHexString()}"></i>
+                        <span class="truncate">${esc(obj.name)}</span>
+                    </div>
+                    <i class="fa-solid ${obj.mesh.visible ? 'fa-eye' : 'fa-eye-slash'} text-slate-400 hover:text-white" title="Afficher / masquer" onclick="event.stopPropagation(); toggleBody(${idx})"></i>
+                `;
+                div.onclick = () => selectObject(obj);
+                listEl.appendChild(div);
+            });
+            updateSketchTree();
+        }
+
+        function updateBrowserTreeHighlight() {
+            updateBrowserTree();
+        }
+
+        function addTimelineStep(stepName) {
+            if (!restoring) pushHistory();
+            timelineHistory.push({ name: stepName, type: 'user' });
+            const container = document.getElementById('timeline-steps');
+            document.getElementById('timeline-count').innerText = timelineHistory.length;
+
+            const stepEl = document.createElement('div');
+            stepEl.className = 'flex items-center space-x-2 text-slate-300 text-xs bg-slate-800 px-2.5 py-1 rounded border border-fusion-border flex-shrink-0';
+            stepEl.innerHTML = `
+                <div class="w-6 h-6 rounded-full bg-orange-500/15 text-orange-300 flex items-center justify-center text-[10px]" title="Étape ${timelineHistory.length}"><i class="fa-solid fa-${stepIcon(stepName)}"></i></div>
+                <span class="truncate max-w-[160px]">${esc(stepName)}</span>
+            `;
+            container.appendChild(stepEl);
+            container.scrollLeft = container.scrollWidth;
+        }
+
+        function playTimeline() {
+            showModal('Relecture Paramétrique', 'Exécution séquentielle de l\'historique de conception...\nTous les corps paramétriques ont été recalculés avec succès.');
+        }
+
+        function setViewAngle(angle) {
+            if (angle === 'home') camera.position.set(25, 20, 25);
+            else if (angle === 'top') camera.position.set(0, 45, 0);
+            else if (angle === 'front') camera.position.set(0, 0, 45);
+            else if (angle === 'right') camera.position.set(45, 0, 0);
+            orbitControls.target.set(0, 0, 0);
+            orbitControls.update();
+        }
+
+        function measureBody() {
+            if (!selectedObject) {
+                showModal('Mesurer', 'Veuillez sélectionner un corps 3D pour inspecter ses dimensions et son volume.');
+                return;
+            }
+            const box = new THREE.Box3().setFromObject(selectedObject.mesh);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            showModal('Résultats de mesure', `Corps : ${selectedObject.name}\n• Largeur (X) : ${size.x.toFixed(2)} mm\n• Hauteur (Y) : ${size.y.toFixed(2)} mm\n• Profondeur (Z) : ${size.z.toFixed(2)} mm\n• Volume approx. : ${(size.x * size.y * size.z).toFixed(2)} mm³`);
+        }
+
+        function exportSTL() {
+            if (objectsList.length === 0) {
+                showModal('Exporter STL', 'Aucun corps 3D présent dans la scène à exporter.');
+                return;
+            }
+            const exporter = new THREE.STLExporter();
+            const group = new THREE.Group();
+            objectsList.filter(o => o.mesh.visible).forEach(o => group.add(o.mesh.clone()));
+            
+            const result = exporter.parse(group, { binary: true });
+            const blob = new Blob([result], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Fusion360_Modele.stl';
+            link.click();
+            showModal('Export STL réussi', 'Votre modèle 3D a été exporté au format STL, prêt pour l\'impression 3D.');
+        }
+
+        function showModal(title, desc) {
+            document.getElementById('modal-title').querySelector('span').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('app-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('app-modal').classList.add('hidden');
+        }
+
+        // ================= OUTILS COMMUNS =================
+        const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function setMouse(e) {
+            const r = renderer.domElement.getBoundingClientRect();
+            mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            raycaster.setFromCamera(mouse, camera);
+        }
+        function showPanel(html) { const p = document.getElementById('float-panel'); p.innerHTML = html; p.style.top = sketchMode ? '6rem' : ''; p.classList.remove('hidden'); }
+        function hidePanel() { document.getElementById('float-panel').classList.add('hidden'); }
+        const fld = (id, label, val, fn = 'updateSelectedGeometry()', step = 'any') => `<div><label class="text-slate-400">${label}</label><input type="number" step="${step}" id="${id}" value="${val}" onchange="${fn}" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></div>`;
+
+        // ================= INSPECTEUR : paramètres, rotation, échelle =================
+        function extraParams(o) {
+            const p = o.params;
+            if (o.type === 'import') return '<div class="text-slate-400">Maillage : dimensions non paramétriques, utilisez l\'échelle.</div>';
+            if (o.type === 'cone') return fld('param-r', 'Rayon', p.radius) + fld('param-h', 'Hauteur', p.height);
+            if (o.type === 'torus') return fld('param-r', 'Rayon', p.radius) + fld('param-t', 'Épaisseur du tube', p.tube);
+            if (o.type === 'extrude') return fld('param-d', 'Distance', p.dist) + `<div><label class="text-slate-400">Sens</label><select id="param-m" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200">
+                ${[['one', 'Un côté'], ['rev', 'Inverse'], ['sym', 'Symétrique']].map(([v, l]) => `<option value="${v}" ${p.mode === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>` + fld('param-bv', 'Arrondi / chanfrein des arêtes (mm)', p.bev || 0) + bevSel(p);
+            return '';
+        }
+        function transformHTML(o) {
+            const r = o.mesh.rotation, s = o.mesh.scale, D = 180 / Math.PI;
+            const f = (id, v, fn, st) => `<input type="number" step="${st}" id="${id}" value="${(+v).toFixed(2)}" onchange="${fn}" class="bg-slate-800 border border-fusion-border rounded px-1.5 py-1 text-slate-200 w-full">`;
+            const lbl = 'text-slate-400 text-[10px] uppercase font-semibold';
+            return `<div class="border-t border-fusion-border pt-3"><span class="${lbl}">Rotation (°)</span>
+                <div class="grid grid-cols-3 gap-2 mt-1">${f('rot-x', r.x * D, 'updateRotation()', 1)}${f('rot-y', r.y * D, 'updateRotation()', 1)}${f('rot-z', r.z * D, 'updateRotation()', 1)}</div></div>
+                <div class="border-t border-fusion-border pt-3"><div class="flex items-center justify-between"><span class="${lbl}">Échelle</span>
+                <label class="text-slate-400 flex items-center space-x-1"><input type="checkbox" id="sc-lock" checked><span>Uniforme</span></label></div>
+                <div class="grid grid-cols-3 gap-2 mt-1">${f('sc-x', s.x, "updateScale('x')", 0.1)}${f('sc-y', s.y, "updateScale('y')", 0.1)}${f('sc-z', s.z, "updateScale('z')", 0.1)}</div>
+                <div class="flex space-x-1 mt-2">${[['× 0,5', 0.5], ['× 2', 2], ['Réinit.', 0]].map(([t, v]) => `<button onclick="scaleBy(${v})" class="flex-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">${t}</button>`).join('')}</div></div>`;
+        }
+        function refreshTransformFields() {
+            if (!selectedObject) return;
+            const m = selectedObject.mesh, D = 180 / Math.PI;
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v.toFixed(2); };
+            set('rot-x', m.rotation.x * D); set('rot-y', m.rotation.y * D); set('rot-z', m.rotation.z * D);
+            set('sc-x', m.scale.x); set('sc-y', m.scale.y); set('sc-z', m.scale.z);
+        }
+        function updateRotation() {
+            if (!selectedObject) return;
+            const g = id => (parseFloat(document.getElementById(id).value) || 0) * Math.PI / 180;
+            selectedObject.mesh.rotation.set(g('rot-x'), g('rot-y'), g('rot-z'));
+            addTimelineStep(`Rotation de ${selectedObject.name}`);
+        }
+        function updateScale(ax) {
+            if (!selectedObject) return;
+            const v = Math.max(0.01, parseFloat(document.getElementById('sc-' + ax).value) || 1), s = selectedObject.mesh.scale;
+            if (document.getElementById('sc-lock').checked) s.multiplyScalar(v / s[ax]); else s[ax] = v;
+            refreshTransformFields();
+            addTimelineStep(`Échelle de ${selectedObject.name}`);
+        }
+        function scaleBy(f) {
+            if (!selectedObject) return;
+            if (f === 0) selectedObject.mesh.scale.set(1, 1, 1); else selectedObject.mesh.scale.multiplyScalar(f);
+            refreshTransformFields();
+            addTimelineStep(`Échelle de ${selectedObject.name}`);
+        }
+
+        // ================= ESQUISSE =================
+        const PLANES = {
+            xy: { label: 'XY · Face', n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0], color: 0x5a9eff },
+            yz: { label: 'YZ · Droite', n: [1, 0, 0], u: [0, 0, -1], v: [0, 1, 0], color: 0xf0707a },
+            xz: { label: 'XZ · Sol', n: [0, 1, 0], u: [1, 0, 0], v: [0, 0, -1], color: 0x5fd4a0 }
+        };
+        const basis = k => ['u', 'v', 'n'].map(a => new THREE.Vector3(...PLANES[k][a]));
+        let sketchMode = false, sketch = null, pickingPlane = false, planeHelpers = null, savedSketches = [], sketchCounter = 0;
+        let skVis = null, skGrid = null, skPrev = null, skMouse = null, groundGrid = null, shiftDown = false;
+        const SK = { tool: 'line', snap: true, step: 0, ortho: false, constr: false, center: false, sides: 6, sel: [], rectMode: '2pts', arcMode: '3pts' };
+
+        function initInput() {
+            initFiles();
+            const dom = renderer.domElement; let down = null;
+            transformControls.addEventListener('mouseUp', () => { });
+            dom.addEventListener('contextmenu', e => e.preventDefault());
+            dom.addEventListener('pointerdown', e => { if (ex && exGrab(e)) return; down = { x: e.clientX, y: e.clientY, b: e.button, g: !!transformControls.axis }; });
+            dom.addEventListener('pointermove', e => { if (ex && ex.drag) { exMove(e); return; } if (pickingPlane) hoverPlane(e); else if (sketchMode) skMove(e); });
+            dom.addEventListener('pointerup', e => {
+                if (ex && ex.drag) { exEnd(); down = null; return; }
+                if (!down) return; const d = down; down = null;
+                if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 4 || d.g) return; // glissement = orbite / gizmo
+                if (ex) { if (d.b === 0) exPick(e); return; }
+                if (pickingPlane) { if (d.b === 0) pickPlane(e); return; }
+                if (sketchMode) { skClick(e, d.b); return; }
+                if (d.b !== 0) return;
+                if (selMode !== 'body') { pickSub(e); return; }
+                setMouse(e);
+                const hit = raycaster.intersectObjects(objectsList.filter(o => o.mesh.visible).map(o => o.mesh))[0];
+                const obj = hit && objectsList.find(o => o.mesh === hit.object);
+                obj ? selectObject(obj) : (pickSketchAt(e) || deselect());
+            });
+            dom.addEventListener('dblclick', () => { if (sketchMode) skFinishChain(); });
+            document.addEventListener('click', e => { if (e.target.closest('a[href="#"]')) e.preventDefault(); });
+            document.getElementById('sk-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') { skNumeric(e.target.value); e.target.value = ''; e.target.blur(); }
+            });
+            window.addEventListener('keyup', e => { if (e.key === 'Shift') shiftDown = false; });
+            window.addEventListener('keydown', e => {
+                if (e.key === 'Shift') shiftDown = true;
+                const t = e.target.tagName, typing = t === 'INPUT' || t === 'SELECT' || t === 'TEXTAREA';
+                if (e.key === 'Escape') {
+                    if (e.target.id === 'sk-input') e.target.blur();
+                    if (!document.getElementById('app-modal').classList.contains('hidden')) closeModal();
+                    else if (ed) edEnd(false);
+                    else if (ex) exCancel();
+                    else if (pickingPlane) cancelPlanePick();
+                    else if (sketchMode) { if (sketch.pts.length) skFinishChain(); else skTool('select'); }
+                    else if (!document.getElementById('float-panel').classList.contains('hidden')) hidePanel();
+                    else deselect();
+                    return;
+                }
+                if (typing) return;
+                const k = e.key.toLowerCase();
+                if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'y')) { e.preventDefault(); (k === 'y' || e.shiftKey) ? redo() : undo(); return; }
+                if ((e.ctrlKey || e.metaKey) && k === 'd') { e.preventDefault(); duplicateSelected(); return; }
+                if (sketchMode) {
+                    const tools = { l: 'line', r: 'rect', c: 'circle', p: 'poly', s: 'select', a: 'arc' };
+                    if (k === 'delete' || k === 'backspace') skDeleteSel();
+                    else if (k === 'enter') skFinishChain();
+                    else if (tools[k]) skTool(tools[k]);
+                    else if (sketch.pts.length && /^[0-9.\-]$/.test(e.key)) document.getElementById('sk-input').focus();
+                    return;
+                }
+                if ((k === 'delete' || k === 'backspace') && selectedObject) deleteSelected();
+                else if (k === 'delete' && selSub && selSub.sideOf) delSide();
+                else if (k === 'delete' && selSketch) deleteSketch(selSketch.id);
+                else if (k === 'w') setTool('translate');
+                else if (k === 'e') setTool('rotate');
+                else if (k === 'r') setTool('scale');
+                else if (k === 'q') setTool('none');
+            });
+        }
+
+        // --- choix du plan ---
+        function startSketch(key) {
+            if (sketchMode) return;
+            if (key) {
+                const off = parseFloat((document.getElementById('plane-offset') || {}).value) || 0;
+                cancelPlanePick(); enterSketch(key, off); return;
+            }
+            if (pickingPlane) return;
+            deselect(); pickingPlane = true;
+            planeHelpers = new THREE.Group();
+            Object.entries(PLANES).forEach(([k, P]) => {
+                const m = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshBasicMaterial({ color: P.color, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false }));
+                m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry), new THREE.LineBasicMaterial({ color: P.color })));
+                const [u, v, n] = basis(k);
+                m.matrixAutoUpdate = false; m.matrix.makeBasis(u, v, n).setPosition(u.clone().add(v).multiplyScalar(12));
+                m.userData.key = k; planeHelpers.add(m);
+            });
+            scene.add(planeHelpers);
+            camera.position.set(25, 20, 25); orbitControls.target.set(0, 0, 0);
+            setHud('Choix du plan');
+            showPanel(`<div class="font-semibold text-slate-200 mb-2"><i class="fa-solid fa-pen-nib text-blue-400 mr-1"></i>Choisissez le plan de l'esquisse</div>
+                <div class="grid grid-cols-3 gap-1.5">${Object.entries(PLANES).map(([k, P]) => `<button onclick="startSketch('${k}')" class="px-2 py-2 bg-slate-800 hover:bg-slate-700 rounded border" style="border-color:#${P.color.toString(16).padStart(6, '0')}">${P.label}</button>`).join('')}</div>
+                <label class="block mt-2 text-slate-400">Décalage du plan (mm)<input id="plane-offset" type="number" value="0" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></label>
+                <p class="text-slate-500 mt-2">Cliquez un plan dans la vue 3D ou un bouton (le plan XZ est le sol).</p>
+                <button onclick="cancelPlanePick()" class="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">Annuler</button>`);
+        }
+        function hoverPlane(e) {
+            setMouse(e);
+            const hit = raycaster.intersectObjects(planeHelpers.children)[0];
+            planeHelpers.children.forEach(m => m.material.opacity = hit && hit.object === m ? 0.45 : 0.18);
+            renderer.domElement.style.cursor = hit ? 'pointer' : '';
+        }
+        function pickPlane(e) {
+            setMouse(e);
+            const hit = raycaster.intersectObjects(planeHelpers.children)[0];
+            if (hit) startSketch(hit.object.userData.key);
+        }
+        function cancelPlanePick() {
+            pickingPlane = false;
+            if (planeHelpers) scene.remove(planeHelpers);
+            planeHelpers = null; hidePanel(); renderer.domElement.style.cursor = '';
+            if (!sketchMode) setHud('Orbite / Sélection');
+        }
+
+        // --- entrée / sortie du mode esquisse ---
+        function enterSketch(key, off, existing) {
+            const [u, v, n] = PLANES[key] ? basis(key) : [];
+            sketch = existing || { key, u, v, n, o: n.clone().multiplyScalar(off), o0: new THREE.Vector3(), off, ents: [], id: ++sketchCounter, name: 'Esquisse ' + (sketchCounter) };
+            sketch.pts = []; sketchMode = true; SK.sel = [];
+            deselect(); setGridPlane(sketch);
+            orbitControls.enableRotate = false;
+            skRealign();
+            renderer.domElement.style.cursor = 'crosshair';
+            document.getElementById('sketch-bar').classList.remove('hidden');
+            document.getElementById('sk-hud').classList.remove('hidden');
+            document.getElementById('sk-title').innerText = sketch.name + ' · ' + (PLANES[key] || { label: 'Face' }).label;
+            document.getElementById('sk-off').value = +(sketch.off || 0).toFixed(3);
+            skTool(SK.tool === 'select' ? 'line' : SK.tool);
+            setHud('Esquisse');
+        }
+        function skRealign() {
+            camera.position.copy(sketch.o).addScaledVector(sketch.n, 45);
+            orbitControls.target.copy(sketch.o); orbitControls.update();
+        }
+        function endSketch(save) {
+            if (!sketchMode) return;
+            if (save && sketch.ents.length) {
+                sketch.group = skGroup(sketch, 0); scene.add(sketch.group);
+                savedSketches.push(sketch);
+                addTimelineStep(`${sketch.name} (plan ${sketch.key.toUpperCase()})`);
+            }
+            [skVis, skGrid, skPrev].forEach(o => o && scene.remove(o));
+            skVis = skGrid = skPrev = null;
+            setGridPlane(null); orbitControls.enableRotate = true;
+            sketchMode = false; sketch = null;
+            renderer.domElement.style.cursor = '';
+            document.getElementById('sketch-bar').classList.add('hidden');
+            document.getElementById('sk-hud').classList.add('hidden');
+            setHud('Orbite / Sélection'); updateSketchTree();
+            camera.position.set(25, 20, 25); orbitControls.target.set(0, 0, 0);
+        }
+        function skTool(t) {
+            SK.tool = t; sketch.pts = []; SK.sel = []; skClearPrev();
+            document.querySelectorAll('[data-sk]').forEach(b => b.classList.toggle('active', b.dataset.sk === t));
+            document.getElementById('sk-live').innerText = ({ line: 'Ligne : cliquez le départ', rect: 'Rectangle : cliquez un coin', circle: 'Cercle : cliquez le centre', poly: 'Polygone : cliquez le centre', select: 'Cliquez un élément', arc: 'Arc : cliquez le 1er point', fillet: 'Congé : cliquez un coin', chamfer: 'Chanfrein : cliquez un coin' })[t];
+            skRefresh();
+        }
+        function skOpt() {
+            const g = id => document.getElementById(id);
+            SK.snap = g('sk-snap').checked; SK.ortho = g('sk-ortho').checked; SK.constr = g('sk-constr').checked; SK.rectMode = g('sk-rect').value; SK.arcMode = g('sk-arc').value;
+            SK.sides = Math.max(3, Math.min(64, parseInt(g('sk-sides').value) || 6));
+            SK.step = g('sk-step').value === 'auto' ? 0 : +g('sk-step').value;
+        }
+        function skToggleOrbit() { orbitControls.enableRotate = !orbitControls.enableRotate; }
+        
+        // --- géométrie des éléments ---
+                                        const polyArea = p => p.reduce((a, q, i) => { const r = p[(i + 1) % p.length]; return a + (q[0] * r[1] - r[0] * q[1]) / 2; }, 0);
+        const inPoly = (pt, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c; } return c; };
+                function skGroup(sk, mode, excl) { // mode 0 = enregistrée, 1 = active, 2 = aperçu
+            const g = new THREE.Group(); g.matrixAutoUpdate = false; g.matrix.makeBasis(sk.u, sk.v, sk.n).setPosition(sk.o);
+            const P = (p, z = 0.02) => new THREE.Vector3(p[0], p[1], z), dots = [];
+            sk.ents.forEach((e, i) => {
+                const col = mode === 2 ? 0xfbbf24 : mode === 3 ? 0xf97316 : (mode === 1 && SK.sel.includes(i)) ? 0xf97316 : e.k ? 0x94a3b8 : 0x38bdf8;
+                const geo = new THREE.BufferGeometry().setFromPoints(ptsOf(e).map(p => P(p)));
+                const mat = e.k ? new THREE.LineDashedMaterial({ color: col, dashSize: 1, gapSize: 0.7 }) : new THREE.LineBasicMaterial({ color: col });
+                const l = closedEnt(e) ? new THREE.LineLoop(geo, mat) : new THREE.Line(geo, mat);
+                if (e.k) l.computeLineDistances();
+                g.add(l);
+                if (mode === 1) keyPts(e).forEach(p => dots.push(P(p, 0.03)));
+            });
+            if (dots.length) g.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(dots), new THREE.PointsMaterial({ color: 0xffffff, size: 4, sizeAttenuation: false })));
+            skProfiles(sk).forEach((pr, i) => { const inc = !(excl && excl.has(i)); g.add(new THREE.Mesh(new THREE.ShapeGeometry(profShape(pr)), new THREE.MeshBasicMaterial({ color: inc ? (excl ? 0xf97316 : 0x38bdf8) : 0x64748b, transparent: true, opacity: excl ? (inc ? 0.38 : 0.07) : 0.18, side: THREE.DoubleSide, depthWrite: false }))); });
+            return g;
+        }
+        function skRefresh() { if (skVis) scene.remove(skVis); skVis = skGroup(sketch, 1); scene.add(skVis); }
+        function skClearPrev() { if (skPrev) scene.remove(skPrev); skPrev = null; }
+
+        // --- pointeur, accrochage, dessin ---
+        function skPoint(e) {
+            setMouse(e);
+            const pl = new THREE.Plane().setFromNormalAndCoplanarPoint(sketch.n, sketch.o), p = new THREE.Vector3();
+            if (!raycaster.ray.intersectPlane(pl, p)) return null;
+            p.sub(sketch.o); return [p.dot(sketch.u), p.dot(sketch.v)];
+        }
+        const skPx = () => 2 * camera.position.distanceTo(sketch.o) * Math.tan(camera.fov * Math.PI / 360) / renderer.domElement.clientHeight;
+        function skSnap(raw) {
+            const a = sketch.pts[0], ortho = a && (SK.ortho || shiftDown);
+            let p = raw.slice();
+            if (ortho) { if (Math.abs(p[0] - a[0]) > Math.abs(p[1] - a[1])) p[1] = a[1]; else p[0] = a[0]; }
+            else {
+                let best = null, bd = skPx() * 10;
+                [[0, 0], ...sketch.ents.flatMap(keyPts)].forEach(q => { const d = Math.hypot(q[0] - raw[0], q[1] - raw[1]); if (d < bd) { bd = d; best = q; } });
+                if (best) return { p: best.slice(), mark: true };
+            }
+            if (SK.snap) { const st = SK.step || gridCell(); p = p.map(c => Math.round(c / st) * st); }
+            return { p, mark: false };
+        }
+                function skMove(e) {
+            const raw = skPoint(e); if (!raw) return;
+            const s = skSnap(raw); skMouse = s.p; skClearPrev();
+            skPrev = new THREE.Group();
+            const ent = sketch.pts.length ? skMake(s.p) : null;
+            if (ent) skPrev.add(skGroup({ ...sketch, ents: [ent] }, 2));
+            const w = sketch.o.clone().addScaledVector(sketch.u, s.p[0]).addScaledVector(sketch.v, s.p[1]).addScaledVector(sketch.n, 0.05);
+            skPrev.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints([w]), new THREE.PointsMaterial({ color: s.mark ? 0x22c55e : 0xffffff, size: s.mark ? 10 : 5, sizeAttenuation: false })));
+            scene.add(skPrev);
+            let t = `x ${s.p[0].toFixed(2)}   y ${s.p[1].toFixed(2)}`;
+            if (ent && ent.t === 'line') { const dx = ent.b[0] - ent.a[0], dy = ent.b[1] - ent.a[1]; t = `L ${Math.hypot(dx, dy).toFixed(2)} mm · ${(Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1)}°`; }
+            else if (ent && ent.t === 'rect') t = `${Math.abs(ent.b[0] - ent.a[0]).toFixed(2)} × ${Math.abs(ent.b[1] - ent.a[1]).toFixed(2)} mm`;
+            else if (ent) t = `R ${ent.r.toFixed(2)} mm · Ø ${(2 * ent.r).toFixed(2)}` + (ent.t === 'poly' ? ` · ${ent.n} côtés` : '');
+            document.getElementById('sk-live').innerText = t;
+        }
+                        function skNumeric(val) {
+            const a = sketch.pts[0], m = skMouse; if (!a || !m) return;
+            const n = val.split(/[\s,;x]+/).map(parseFloat).filter(isFinite); if (!n.length) return;
+            const dx = m[0] - a[0], dy = m[1] - a[1]; let p;
+            if (SK.tool === 'rect') {
+                const f = SK.rectMode === 'center' ? 0.5 : 1;
+                p = [a[0] + (dx < 0 ? -1 : 1) * Math.abs(n[0]) * f, a[1] + (dy < 0 ? -1 : 1) * Math.abs(n.length > 1 ? n[1] : n[0]) * f];
+            } else { const L = Math.hypot(dx, dy) || 1, r = Math.abs(n[0]); p = [a[0] + dx / L * r, a[1] + dy / L * r]; }
+            skCommit(p);
+        }
+        function skFinishChain() { if (!sketch) return; sketch.pts = []; skClearPrev(); }
+        function skUndo() { if (sketch.pts.length) skFinishChain(); else { sketch.ents.pop(); SK.sel = []; skRefresh(); } }
+                
+        // --- liste des esquisses + extrusion ---
+        function updateSketchTree() {
+            const el = document.getElementById('sketches-tree-list'); if (!el) return;
+            document.getElementById('sketch-count').innerText = savedSketches.length; el.innerHTML = '';
+            savedSketches.forEach(s => {
+                const d = document.createElement('div');
+                d.className = 'flex items-center justify-between py-1 px-2 rounded hover:bg-slate-800 text-slate-300';
+                const ic = (cls, tip, fn) => `<i class="fa-solid ${cls} cursor-pointer hover:text-white" title="${tip}" onclick="${fn}"></i>`;
+                d.innerHTML = `<span class="truncate cursor-pointer ${s === selSketch ? 'text-white font-medium' : ''}" title="Sélectionner l'esquisse" onclick="selectSketch(${s.id})"><i class="fa-solid fa-pen-nib text-blue-400 mr-1.5"></i>${esc(s.name)}</span>
+                    <span class="flex space-x-2 text-slate-400">${ic('fa-pen', 'Modifier', `editSketch(${s.id})`)}${ic(s.group.visible ? 'fa-eye' : 'fa-eye-slash', 'Afficher / masquer', `toggleSketch(${s.id})`)}${ic('fa-arrows-up-down', 'Hauteur', `openSketchHeight(${s.id})`)}${ic('fa-up-long', 'Extruder', `openExtrude(${s.id})`)}${ic('fa-trash', 'Supprimer', `deleteSketch(${s.id})`)}</span>`;
+                el.appendChild(d);
+            });
+        }
+        const findSketch = id => savedSketches.find(s => s.id === id);
+        function editSketch(id) {
+            const s = findSketch(id); if (!s || sketchMode) return;
+            savedSketches = savedSketches.filter(x => x !== s); scene.remove(s.group); updateSketchTree(); enterSketch(s.key, 0, s);
+        }
+        function toggleSketch(id) { const s = findSketch(id); if (s) { s.group.visible = !s.group.visible; updateSketchTree(); } }
+        function deleteSketch(id) { const s = findSketch(id); if (!s) return; scene.remove(s.group); savedSketches = savedSketches.filter(x => x !== s); addTimelineStep(`Suppression de ${s.name}`); updateSketchTree(); }
+        
+
+        // ================= HISTORIQUE (annuler / rétablir) =================
+        let restoring = false, hist = [{ b: [], s: [] }], hi = 0;
+        function snap() {
+            return {
+                b: objectsList.map(o => ({ o, name: o.name, t: o.type, params: JSON.parse(JSON.stringify(o.params || {})), geo: o.mesh.geometry, p: o.mesh.position.clone(), q: o.mesh.quaternion.clone(), s: o.mesh.scale.clone(), c: o.mesh.material.color.getHex(), v: o.mesh.visible })),
+                s: savedSketches.map(s => ({ s, ents: JSON.stringify(s.ents), v: s.group.visible, o: s.o.clone(), off: s.off }))
+            };
+        }
+        function pushHistory() { hist = hist.slice(0, hi + 1); hist.push(snap()); if (hist.length > 60) hist.shift(); hi = hist.length - 1; }
+        function restore(st) {
+            restoring = true;
+            objectsList.forEach(o => scene.remove(o.mesh)); savedSketches.forEach(s => scene.remove(s.group));
+            transformControls.detach(); selectedObject = null;
+            objectsList = st.b.map(b => {
+                const o = b.o, m = o.mesh; o.name = b.name; o.type = b.t; o.params = JSON.parse(JSON.stringify(b.params));
+                m.geometry = b.geo; m.position.copy(b.p); m.quaternion.copy(b.q); m.scale.copy(b.s); m.material.color.setHex(b.c); m.visible = b.v; scene.add(m); return o;
+            });
+            savedSketches = st.s.map(x => { const s = x.s; s.ents = JSON.parse(x.ents); s.o = x.o; s.off = x.off; s.group = skGroup(s, 0); s.group.visible = x.v; scene.add(s.group); return s; });
+            document.getElementById('hud-selection').innerText = 'Aucun';
+            updateBrowserTree(); resetInspector(); restoring = false;
+        }
+        function undo() { if (sketchMode) { skUndo(); return; } if (hi > 0) restore(hist[--hi]); }
+        function redo() { if (!sketchMode && hi < hist.length - 1) restore(hist[++hi]); }
+
+        // ================= DUPLIQUER / VISIBILITÉ / MATÉRIAU =================
+        function duplicateSelected() {
+            if (!selectedObject) { showModal('Dupliquer', 'Sélectionnez d\'abord un corps.'); return; }
+            const o = selectedObject, m = new THREE.Mesh(o.mesh.geometry.clone(), o.mesh.material.clone());
+            m.position.copy(o.mesh.position); m.position.x += 12; m.quaternion.copy(o.mesh.quaternion); m.scale.copy(o.mesh.scale);
+            scene.add(m);
+            const n = { ...o, id: 'Body_' + Date.now(), name: o.name + ' (copie)', mesh: m, params: JSON.parse(JSON.stringify(o.params || {})) };
+            objectsList.push(n); addTimelineStep(`Copie de ${o.name}`); updateBrowserTree(); selectObject(n);
+        }
+        function toggleBody(i) {
+            const o = objectsList[i]; if (!o) return;
+            o.mesh.visible = !o.mesh.visible;
+            if (!o.mesh.visible && o === selectedObject) deselect(); else updateBrowserTree();
+        }
+        function matHTML(o) {
+            const m = o.mesh.material, sl = (k, l, min) => `<div class="flex items-center space-x-2"><span class="w-20 text-slate-400">${l}</span><input type="range" min="${min}" max="1" step="0.05" value="${m[k]}" oninput="setMat('${k}',this.value)" class="flex-1"></div>`;
+            return `<div class="space-y-1 mt-2">${sl('metalness', 'Métallique', 0)}${sl('roughness', 'Rugosité', 0)}${sl('opacity', 'Opacité', 0.1)}</div>`;
+        }
+        function setMat(k, v) { if (!selectedObject) return; const m = selectedObject.mesh.material; m[k] = +v; if (k === 'opacity') m.transparent = +v < 1; }
+
+        // ================= AFFICHAGE : cotes, fil de fer, ajuster =================
+        let showDims = true, wire = false, selBox = null; const dimEls = [];
+        function toggleDims() { showDims = !showDims; document.getElementById('btn-dims').classList.toggle('border-orange-500', showDims); }
+        function toggleWire() { wire = !wire; document.getElementById('btn-wire').classList.toggle('border-orange-500', wire); }
+        function fitView() {
+            const t = selectedObject ? [selectedObject] : objectsList.filter(o => o.mesh.visible); if (!t.length) return;
+            const b = new THREE.Box3(); t.forEach(o => b.expandByObject(o.mesh));
+            const c = b.getCenter(new THREE.Vector3()), r = b.getSize(new THREE.Vector3()).length() / 2 || 5;
+            const dir = camera.position.clone().sub(orbitControls.target).normalize();
+            orbitControls.target.copy(c); camera.position.copy(c).addScaledVector(dir, r / Math.sin(camera.fov * Math.PI / 360) * 1.1); orbitControls.update();
+        }
+        function updateDims() {
+            objectsList.forEach(o => o.mesh.material.wireframe = wire);
+            if (!selBox) { selBox = new THREE.Box3Helper(new THREE.Box3(), 0x3b82f6); scene.add(selBox); }
+            selBox.visible = false; const items = [];
+            if (showDims && sketchMode) {
+                const W = (x, y) => sketch.o.clone().addScaledVector(sketch.u, x).addScaledVector(sketch.v, y), f = n => n.toFixed(2);
+                sketch.ents.forEach((e, i) => {
+                    if (e.t === 'line') items.push([f(dimVal(e, 'len')), W((e.a[0] + e.b[0]) / 2, (e.a[1] + e.b[1]) / 2), 'len', i]);
+                    else if (e.t === 'rect') { items.push([f(dimVal(e, 'w')), W((e.a[0] + e.b[0]) / 2, e.b[1]), 'w', i]); items.push([f(dimVal(e, 'h')), W(e.b[0], (e.a[1] + e.b[1]) / 2), 'h', i]); }
+                    else if (e.t === 'circle') items.push(['Ø ' + f(2 * e.r), W(e.c[0] + e.r, e.c[1]), 'd', i]);
+                    else if (e.t === 'poly') items.push(['R ' + f(e.r), W(e.c[0] + e.r * Math.cos(e.rot), e.c[1] + e.r * Math.sin(e.rot)), 'r', i]);
+                    else if (e.t === 'arc') items.push(['R ' + f(e.r), W(...arcPt(e, 0.5)), 'r', i]);
+                });
+            } else if (showDims && !sketchMode && selectedObject && selectedObject.mesh.visible) {
+                const b = new THREE.Box3().setFromObject(selectedObject.mesh), s = b.getSize(new THREE.Vector3()), mid = (a, c) => (a + c) / 2;
+                selBox.box.copy(b); selBox.visible = true;
+                items.push(['X ' + s.x.toFixed(2), new THREE.Vector3(mid(b.min.x, b.max.x), b.min.y, b.max.z)], ['Y ' + s.y.toFixed(2), new THREE.Vector3(b.max.x, mid(b.min.y, b.max.y), b.max.z)], ['Z ' + s.z.toFixed(2), new THREE.Vector3(b.max.x, b.min.y, mid(b.min.z, b.max.z))]);
+            }
+            const layer = document.getElementById('dim-layer'), W = renderer.domElement.clientWidth, H = renderer.domElement.clientHeight;
+            items.forEach((it, k) => {
+                let el = dimEls[k];
+                if (!el) { el = document.createElement('div'); el.className = 'absolute px-1.5 py-0.5 rounded bg-slate-900/90 border border-blue-500/60 text-[10px] text-blue-200 font-mono whitespace-nowrap'; el.style.transform = 'translate(-50%,-50%)'; layer.appendChild(el); dimEls[k] = el; }
+                const p = it[1].clone().project(camera); el.style.display = p.z < 1 ? 'block' : 'none';
+                if (p.z >= 1) return;
+                el.style.left = ((p.x * 0.5 + 0.5) * W) + 'px'; el.style.top = ((-p.y * 0.5 + 0.5) * H) + 'px';
+                if (el.textContent !== it[0]) el.textContent = it[0];
+                const ed = it[2] !== undefined; el.style.pointerEvents = ed ? 'auto' : 'none'; el.style.cursor = ed ? 'pointer' : ''; el.title = ed ? 'Cliquer pour modifier la cote' : '';
+                el.onclick = ed ? () => skEditDim(it[3], it[2]) : null;
+            });
+            for (let k = items.length; k < dimEls.length; k++) dimEls[k].style.display = 'none';
+        }
+        const dimVal = (e, k) => k === 'len' ? Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1]) : k === 'w' ? Math.abs(e.b[0] - e.a[0]) : k === 'h' ? Math.abs(e.b[1] - e.a[1]) : k === 'd' ? 2 * e.r : e.r;
+        function skEditDim(i, k) {
+            const e = sketch.ents[i]; if (!e) return;
+            showPanel(`<label class="block text-slate-400">Cote (mm)<input id="dim-v" type="number" step="any" value="${dimVal(e, k).toFixed(3)}" onkeydown="if(event.key==='Enter')skApplyDim(${i},'${k}')" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></label>
+                <div class="flex justify-end space-x-2 mt-3"><button onclick="hidePanel()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">Annuler</button>
+                <button onclick="skApplyDim(${i},'${k}')" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded">Appliquer</button></div>`);
+            const inp = document.getElementById('dim-v'); inp.focus(); inp.select();
+        }
+        function skApplyDim(i, k) {
+            const v = Math.abs(parseFloat(document.getElementById('dim-v').value)), e = sketch.ents[i]; if (!v) return;
+            if (k === 'len') {
+                const old = e.b, dx = e.b[0] - e.a[0], dy = e.b[1] - e.a[1], L = Math.hypot(dx, dy) || 1; e.b = [e.a[0] + dx / L * v, e.a[1] + dy / L * v];
+                sketch.ents.forEach(o => { if (o !== e && o.t === 'line') { if (Math.hypot(o.a[0] - old[0], o.a[1] - old[1]) < 1e-3) o.a = e.b; if (Math.hypot(o.b[0] - old[0], o.b[1] - old[1]) < 1e-3) o.b = e.b; } });
+            }
+            else if (k === 'w') e.b = [e.a[0] + (e.b[0] < e.a[0] ? -v : v), e.b[1]];
+            else if (k === 'h') e.b = [e.b[0], e.a[1] + (e.b[1] < e.a[1] ? -v : v)];
+            else if (k === 'd') e.r = v / 2; else e.r = v;
+            hidePanel(); skRefresh();
+        }
+
+        // ================= IMPORT / EXPORT =================
+        function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+        function exportOBJ() {
+            const vis = objectsList.filter(o => o.mesh.visible);
+            if (!vis.length) { showModal('Exporter OBJ', 'Aucun corps 3D visible à exporter.'); return; }
+            const g = new THREE.Group();
+            vis.forEach(o => { const c = o.mesh.clone(); c.name = o.name.replace(/\s+/g, '_'); g.add(c); });
+            g.updateMatrixWorld(true);
+            download(new Blob([new THREE.OBJExporter().parse(g)], { type: 'text/plain' }), 'Fusion360_Modele.obj');
+            showModal('Export OBJ réussi', 'Modèle exporté au format OBJ (unités : mm).');
+        }
+        function initFiles() {
+            const c = document.getElementById('viewport-container');
+            c.addEventListener('dragover', e => e.preventDefault());
+            c.addEventListener('drop', e => { e.preventDefault(); importFiles(e.dataTransfer.files); });
+        }
+        function importFiles(files) {
+            [...files].forEach(f => {
+                const ext = f.name.split('.').pop().toLowerCase(), r = new FileReader(), base = f.name.replace(/\.\w+$/, '');
+                r.onerror = () => showModal('Import', 'Lecture impossible : ' + f.name);
+                r.onload = () => {
+                    try {
+                        const geos = [];
+                        if (ext === 'stl') geos.push(new THREE.STLLoader().parse(r.result));
+                        else if (ext === 'obj') new THREE.OBJLoader().parse(r.result).traverse(c => { if (c.isMesh) geos.push(c.geometry); });
+                        else throw new Error('format');
+                        if (!geos.length) throw new Error('vide');
+                        geos.forEach((g, i) => addImported(g, base + (geos.length > 1 ? ' ' + (i + 1) : '')));
+                    } catch (err) { showModal('Import', `Fichier non pris en charge ou invalide : ${f.name}\nFormats acceptés : .obj, .stl`); }
+                };
+                ext === 'stl' ? r.readAsArrayBuffer(f) : r.readAsText(f);
+            });
+        }
+        function addImported(g, name) {
+            if (!g.attributes.normal) g.computeVertexNormals();
+            g.computeBoundingBox(); const b = g.boundingBox, c = b.getCenter(new THREE.Vector3()), mx = Math.max(...b.getSize(new THREE.Vector3()).toArray()) || 1;
+            g.translate(-c.x, -b.min.y, -c.z); // centré, posé sur la grille
+            const color = getRandomColor(), mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.2, side: THREE.DoubleSide }));
+            const k = (mx > 150 || mx < 2) ? 20 / mx : 1; mesh.scale.setScalar(k); // taille aberrante : ramenée à 20 mm
+            scene.add(mesh);
+            const o = { id: 'Body_' + Date.now() + Math.random(), name, type: 'import', mesh, params: {}, color };
+            objectsList.push(o); addTimelineStep(`Import de ${name}` + (k !== 1 ? ` (×${k.toFixed(3)})` : '')); updateBrowserTree(); selectObject(o);
+        }
+
+
+        // ================= GRILLE INFINIE ADAPTATIVE (style Fusion) — v3 =================
+        const AXC = { x: new THREE.Color(0.94, 0.42, 0.46), y: new THREE.Color(0.40, 0.85, 0.62), z: new THREE.Color(0.40, 0.58, 1.0), g: new THREE.Color(0.55, 0.60, 0.72) };
+        const PLANE_AX = { xz: ['x', 'z'], xy: ['x', 'y'], yz: ['z', 'y'] };
+        let yAxis = null, lastCell = 0;
+        let gridPl = { u: new THREE.Vector3(1, 0, 0), v: new THREE.Vector3(0, 0, -1), n: new THREE.Vector3(0, 1, 0), o: new THREE.Vector3(), cu: AXC.x, cv: AXC.z };
+        function makeGrid() {
+            const mat = new THREE.ShaderMaterial({
+                transparent: true, depthWrite: false, side: THREE.DoubleSide, extensions: { derivatives: true },
+                uniforms: { uCell: { value: 1 }, uMix: { value: 0 }, uSize: { value: 1000 }, uC: { value: new THREE.Vector2() }, uCu: { value: new THREE.Color() }, uCv: { value: new THREE.Color() } },
+                // la grille est recentrée sur la caméra : coordonnées toujours petites => aucune vibration des lignes
+                vertexShader: 'uniform float uSize; varying vec2 vP; varying vec3 vW; void main(){ vec2 l = position.xy * uSize; vP = l; vec4 w = modelMatrix * vec4(l, 0.0, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+                fragmentShader: `varying vec2 vP; varying vec3 vW; uniform float uCell; uniform float uMix; uniform vec2 uC; uniform vec3 uCu; uniform vec3 uCv;
+                    float gr(vec2 p, float s){
+                        vec2 q = p / s; vec2 fw = max(fwidth(q), vec2(1e-6));
+                        vec2 d = abs(fract(q - 0.5) - 0.5) / fw;
+                        float f = 1.0 - smoothstep(0.12, 0.40, max(fw.x, fw.y));
+                        return (1.0 - min(min(d.x, d.y), 1.0)) * f; }
+                    void main(){
+                        float a = 0.34 * max(max(gr(vP, uCell) * (1.0 - uMix), gr(vP, uCell * 10.0)), gr(vP, uCell * 100.0) * uMix);
+                        vec2 w = max(fwidth(vP), vec2(1e-6)); vec2 pc = vP + uC;
+                        float ax = 1.0 - min(abs(pc.x) / w.x, 1.0), ay = 1.0 - min(abs(pc.y) / w.y, 1.0);
+                        float fade = 1.0 - smoothstep(uCell * 500.0, uCell * 1100.0, length(vW - cameraPosition));
+                        vec3 c = vec3(0.50, 0.56, 0.70); float al = a * fade;
+                        if (ay > 0.01) { c = uCu; al = max(al, ay * 0.9 * fade); }
+                        if (ax > 0.01) { c = uCv; al = max(al, ax * 0.9 * fade); }
+                        if (al < 0.01) discard; gl_FragColor = vec4(c, al); }`
+            });
+            const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
+            m.matrixAutoUpdate = false; m.frustumCulled = false; m.renderOrder = -1; return m;
+        }
+        function gridState() { const l = Math.log10((camera.position.distanceTo(orbitControls.target) || 1) * 0.06); return { cell: Math.pow(10, Math.floor(l)), mix: l - Math.floor(l) }; }
+        const gridCell = () => gridState().cell;
+        function setGridPlane(sk) {
+            const c = (sk ? PLANE_AX[sk.key] : PLANE_AX.xz) || ['g', 'g'];
+            gridPl = sk ? { u: sk.u, v: sk.v, n: sk.n, o: sk.o } : { u: new THREE.Vector3(1, 0, 0), v: new THREE.Vector3(0, 0, -1), n: new THREE.Vector3(0, 1, 0), o: new THREE.Vector3() };
+            gridPl.cu = AXC[c[0]]; gridPl.cv = AXC[c[1]];
+            if (yAxis) yAxis.visible = !sk; // un seul jeu d'axes visible : pas de doublon
+        }
+        function updateGrid() {
+            const d = camera.position.distanceTo(orbitControls.target) || 1, s = gridState(), U = groundGrid.material.uniforms, P = gridPl;
+            const near = Math.max(0.05, d * 0.01), far = Math.max(5000, d * 200);
+            if (Math.abs(camera.near - near) > near * 0.1 || Math.abs(camera.far - far) > far * 0.1) { camera.near = near; camera.far = far; camera.updateProjectionMatrix(); }
+            const snap = s.cell * 100, t = orbitControls.target.clone().sub(P.o), cx = Math.round(t.dot(P.u) / snap) * snap, cy = Math.round(t.dot(P.v) / snap) * snap;
+            U.uCell.value = s.cell; U.uMix.value = s.mix; U.uSize.value = s.cell * 1200; U.uC.value.set(cx, cy); U.uCu.value.copy(P.cu); U.uCv.value.copy(P.cv);
+            groundGrid.matrix.makeBasis(P.u, P.v, P.n).setPosition(P.o.clone().addScaledVector(P.u, cx).addScaledVector(P.v, cy).addScaledVector(P.n, -Math.max(0.01, d * 0.0005)));
+            if (s.cell !== lastCell) { lastCell = s.cell; const h = document.getElementById('hud-grid'); if (h) h.innerText = s.cell >= 1000 ? (s.cell / 1000) + ' m' : s.cell + ' mm'; }
+        }
+        // finesse des cercles / arcs : adaptée au zoom pour qu'un cercle reste rond
+        let tessPx = 0;
+        function circN(r) { return (sketchMode && sketch) ? Math.max(256, Math.min(2048, Math.ceil(2 * Math.PI * r / (skPx() * 2)))) : 512; }
+        function skTessCheck() { const px = skPx(); if (!tessPx || Math.abs(Math.log(px / tessPx)) > 0.3) { tessPx = px; skRefresh(); } }
+
+// ================= ESQUISSE : arcs, rectangles 2/3 points, congés =================
+        const OPEN = { line: 1, arc: 1 };
+        function closedEnt(e) { return !OPEN[e.t]; }
+        const arcPt = (e, t) => { const a = e.a0 + e.sw * t; return [e.c[0] + e.r * Math.cos(a), e.c[1] + e.r * Math.sin(a)]; };
+        function ptsOf(e) {
+            if (e.t === 'line') return [e.a, e.b];
+            if (e.t === 'pl') return e.p;
+            if (e.t === 'arc') { const N = Math.max(16, Math.ceil(Math.abs(e.sw) / (2 * Math.PI) * circN(e.r))); return Array.from({ length: N + 1 }, (_, i) => arcPt(e, i / N)); }
+            if (e.t === 'rect') { const [x1, y1] = e.a, [x2, y2] = e.b; return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]; }
+            const n = e.t === 'circle' ? circN(e.r) : e.n, rot = e.t === 'poly' ? e.rot : 0;
+            return Array.from({ length: n }, (_, i) => { const a = rot + i * 2 * Math.PI / n; return [e.c[0] + e.r * Math.cos(a), e.c[1] + e.r * Math.sin(a)]; });
+        }
+        function keyPts(e) { return e.t === 'circle' ? [e.c] : e.t === 'poly' ? [e.c, ...ptsOf(e)] : e.t === 'arc' ? [arcPt(e, 0), arcPt(e, 1), e.c] : ptsOf(e); }
+                function arc3(a, m, b) { // arc de a à b passant par m
+            const d = 2 * (a[0] * (m[1] - b[1]) + m[0] * (b[1] - a[1]) + b[0] * (a[1] - m[1])); if (Math.abs(d) < 1e-9) return null;
+            const s = p => p[0] * p[0] + p[1] * p[1], TAU = 2 * Math.PI, md = x => ((x % TAU) + TAU) % TAU;
+            const c = [(s(a) * (m[1] - b[1]) + s(m) * (b[1] - a[1]) + s(b) * (a[1] - m[1])) / d, (s(a) * (b[0] - m[0]) + s(m) * (a[0] - b[0]) + s(b) * (m[0] - a[0])) / d];
+            const ang = p => Math.atan2(p[1] - c[1], p[0] - c[0]), a0 = ang(a), ccw = md(ang(m) - a0) < md(ang(b) - a0);
+            return { t: 'arc', c, r: Math.hypot(a[0] - c[0], a[1] - c[1]), a0, sw: ccw ? md(ang(b) - a0) : -md(a0 - ang(b)) };
+        }
+        const skNeed = () => (SK.tool === 'arc' || (SK.tool === 'rect' && SK.rectMode === '3pts')) ? 3 : 2;
+        function skMake(p) {
+            const q = sketch.pts, a = q[0]; if (!a) return null; const k = SK.constr, T = SK.tool;
+            const seg = () => Math.hypot(p[0] - a[0], p[1] - a[1]) > 1e-6 ? { t: 'line', a, b: p, k } : null;
+            if (T === 'line') return seg();
+            if (T === 'rect') {
+                if (SK.rectMode === '3pts') {
+                    if (q.length < 2) return seg();
+                    const b = q[1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy); if (L < 1e-6) return null;
+                    const w = ((p[0] - a[0]) * -dy + (p[1] - a[1]) * dx) / L, nx = -dy / L * w, ny = dx / L * w;
+                    return Math.abs(w) > 1e-6 ? { t: 'pl', p: [a, b, [b[0] + nx, b[1] + ny], [a[0] + nx, a[1] + ny]], k } : null;
+                }
+                const A = SK.rectMode === 'center' ? [2 * a[0] - p[0], 2 * a[1] - p[1]] : a;
+                return Math.abs(p[0] - A[0]) > 1e-6 && Math.abs(p[1] - A[1]) > 1e-6 ? { t: 'rect', a: A, b: p, k } : null;
+            }
+            if (T === 'arc') {
+                if (q.length < 2) return seg();
+                if (SK.arcMode === '3pts') { const e = arc3(a, p, q[1]); if (e) e.k = k; return e; }
+                const r = Math.hypot(q[1][0] - a[0], q[1][1] - a[1]), a0 = Math.atan2(q[1][1] - a[1], q[1][0] - a[0]), TAU = 2 * Math.PI;
+                return r > 1e-6 ? { t: 'arc', c: a, r, a0, sw: (((Math.atan2(p[1] - a[1], p[0] - a[0]) - a0) % TAU) + TAU) % TAU || TAU, k } : null;
+            }
+            const r = Math.hypot(p[0] - a[0], p[1] - a[1]); if (r < 1e-6) return null;
+            if (T === 'circle') return { t: 'circle', c: a, r, k };
+            if (T === 'poly') return { t: 'poly', c: a, r, n: SK.sides, rot: Math.atan2(p[1] - a[1], p[0] - a[0]), k };
+            return null;
+        }
+        function skClick(e, b) {
+            if (b === 2) { skFinishChain(); return; }
+            if (b !== 0) return;
+            const raw = skPoint(e); if (!raw) return;
+            if (SK.tool === 'select') { skSelect(raw, e.shiftKey); return; }
+            if (SK.tool === 'fillet' || SK.tool === 'chamfer') { skCornerPick(raw); return; }
+            const p = skSnap(raw).p;
+            if (!sketch.pts.length) { sketch.pts = [p]; sketch.start = p; return; }
+            if (sketch.pts.length + 1 < skNeed()) { sketch.pts.push(p); return; }
+            skCommit(p);
+        }
+        function skCommit(p) {
+            const ent = skMake(p); if (!ent) return;
+            sketch.ents.push(ent);
+            sketch.pts = (SK.tool === 'line' && Math.hypot(p[0] - sketch.start[0], p[1] - sketch.start[1]) >= 1e-3) ? [p] : [];
+            skClearPrev(); skRefresh();
+        }
+        // congé (arrondi) / chanfrein (aplati) d'un coin formé par deux lignes — avec aperçu
+        function skCornerPick(raw) {
+            const tol = skPx() * 12, near = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 1e-3;
+            const ci = sketch.ents.findIndex(e => ['rect', 'poly', 'pl'].includes(e.t) && ptsOf(e).some(v => Math.hypot(v[0] - raw[0], v[1] - raw[1]) < tol));
+            if (ci >= 0) { const P = ptsOf(sketch.ents[ci]), k = sketch.ents[ci].k; sketch.ents.splice(ci, 1, ...P.map((v, i) => ({ t: 'line', a: v, b: P[(i + 1) % P.length], k }))); skRefresh(); }
+            const lines = sketch.ents.map((e, i) => ({ e, i })).filter(x => x.e.t === 'line'); let hit = null, bd = tol;
+            lines.forEach(x => ['a', 'b'].forEach(s => { const v = x.e[s], d = Math.hypot(v[0] - raw[0], v[1] - raw[1]); if (d >= bd) return;
+                lines.forEach(y => { if (y !== x) ['a', 'b'].forEach(s2 => { if (near(y.e[s2], v)) { bd = d; hit = { i: x.i, s, j: y.i, s2, v }; } }); }); }));
+            if (!hit) { document.getElementById('sk-live').innerText = 'Cliquez un coin formé par deux lignes'; return; }
+            sketch.corner = hit; sketch.backup = JSON.stringify(sketch.ents);
+            showPanel(`<div class="font-semibold text-slate-200 mb-2">${SK.tool === 'fillet' ? 'Arrondir le coin' : 'Aplatir le coin (chanfrein)'}</div>
+                <label class="block text-slate-400">${SK.tool === 'fillet' ? 'Rayon' : 'Distance'} (mm)<input id="cr-v" type="number" step="any" min="0.01" value="2" oninput="skCornerPrev()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></label>
+                <p id="cr-msg" class="text-red-400 mt-1 h-4"></p>
+                <div class="flex justify-end space-x-2 mt-2"><button onclick="skCornerEnd(false)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">Annuler</button><button onclick="skCornerEnd(true)" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded">Valider</button></div>`);
+            skCornerPrev();
+        }
+        function skCornerApply(h, r, ents) {
+            const L1 = ents[h.i], L2 = ents[h.j], V = h.v, A = L1[h.s === 'a' ? 'b' : 'a'], B = L2[h.s2 === 'a' ? 'b' : 'a'];
+            const l1 = Math.hypot(A[0] - V[0], A[1] - V[1]), l2 = Math.hypot(B[0] - V[0], B[1] - V[1]), d1 = [(A[0] - V[0]) / l1, (A[1] - V[1]) / l1], d2 = [(B[0] - V[0]) / l2, (B[1] - V[1]) / l2];
+            const th = Math.acos(Math.max(-1, Math.min(1, d1[0] * d2[0] + d1[1] * d2[1]))); if (th < 0.01 || th > Math.PI - 0.01) return false;
+            const t = SK.tool === 'fillet' ? r / Math.tan(th / 2) : r; if (t >= l1 || t >= l2) return false;
+            const T1 = [V[0] + d1[0] * t, V[1] + d1[1] * t], T2 = [V[0] + d2[0] * t, V[1] + d2[1] * t]; L1[h.s] = T1; L2[h.s2] = T2;
+            if (SK.tool === 'chamfer') { ents.push({ t: 'line', a: T1, b: T2, k: L1.k }); return true; }
+            const bx = d1[0] + d2[0], by = d1[1] + d2[1], bl = Math.hypot(bx, by), dist = r / Math.sin(th / 2), C = [V[0] + bx / bl * dist, V[1] + by / bl * dist];
+            const a1 = Math.atan2(T1[1] - C[1], T1[0] - C[0]), a2 = Math.atan2(T2[1] - C[1], T2[0] - C[0]); let sw = a2 - a1;
+            while (sw > Math.PI) sw -= 2 * Math.PI; while (sw < -Math.PI) sw += 2 * Math.PI;
+            ents.push({ t: 'arc', c: C, r, a0: a1, sw, k: L1.k }); return true;
+        }
+        function skCornerPrev() {
+            const r = Math.abs(parseFloat(document.getElementById('cr-v').value)) || 0, tmp = JSON.parse(sketch.backup), ok = r > 0 && skCornerApply(sketch.corner, r, tmp);
+            document.getElementById('cr-msg').innerText = ok ? '' : 'Valeur trop grande pour ce coin';
+            sketch.ents = ok ? tmp : JSON.parse(sketch.backup); skRefresh();
+        }
+        function skCornerEnd(ok) { if (!ok) sketch.ents = JSON.parse(sketch.backup); hidePanel(); skRefresh(); }
+
+        // ================= EXTRUSION INTERACTIVE (flèche + aperçu + arrondi des arêtes) =================
+        let ex = null, selSketch = null;
+        function bevSel(p) { return `<div><label class="text-slate-400">Type d'arête</label><select id="param-bt" onchange="updateSelectedGeometry()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200">${[['round', 'Arrondi'], ['chamfer', 'Chanfrein']].map(([v, l]) => `<option value="${v}" ${(p.bt || 'round') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`; }
+        function extrudeGeo(sk, d, mode, bev = 0, bt = 'round', excl) {
+            const shapes = skShapes(sk, excl); if (!shapes.length) return null; d = Math.abs(d) || 0.1;
+            const b = Math.min(bev, d / 2 - 0.001), o = b > 0 ? { depth: d - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: bt === 'round' ? 6 : 1 } : { depth: d, bevelEnabled: false };
+            const g = new THREE.ExtrudeGeometry(shapes, o); g.translate(0, 0, (b > 0 ? b : 0) + (mode === 'rev' ? -d : mode === 'sym' ? -d / 2 : 0)); return g;
+        }
+                function exSet() {
+            const g = id => document.getElementById(id); if (!ex) return;
+            ex.D = parseFloat(g('ex-d').value) || 0; ex.sym = g('ex-s').checked; ex.bev = Math.max(0, parseFloat(g('ex-b').value) || 0); ex.bt = g('ex-t').value; exUpdate();
+        }
+        const exMode = () => ex.sym ? 'sym' : ex.D < 0 ? 'rev' : 'one';
+        function exUpdate() {
+            const g = extrudeGeo(ex.sk, Math.abs(ex.D) || 0.1, exMode(), ex.bev, ex.bt, ex.excl); ex.mesh.visible = !!g;
+            const nn = document.getElementById('ex-n'); if (nn) { const tot = skProfiles(ex.sk).length; nn.innerText = `${tot - ex.excl.size} / ${tot} zone(s)`; }
+            if (!g) return;
+            ex.mesh.geometry.dispose(); ex.mesh.geometry = g;
+            const tipT = ex.sym ? ex.D / 2 : ex.D, n = ex.sk.n, tip = ex.c.clone().addScaledVector(n, tipT), dir = n.clone().multiplyScalar(tipT < 0 ? -1 : 1);
+            ex.arrow.position.copy(tip); ex.arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); ex.arrow.scale.setScalar(camera.position.distanceTo(orbitControls.target) / 45);
+            ex.line.geometry.setFromPoints([ex.c, tip]);
+            const el = document.getElementById('ex-d'); if (el && document.activeElement !== el) el.value = ex.D.toFixed(2);
+        }
+        function exAxisT() { // position le long de l'axe de l'extrusion la plus proche du rayon souris
+            const r = raycaster.ray, n = ex.sk.n, w = ex.c.clone().sub(r.origin), b = n.dot(r.direction), den = 1 - b * b;
+            return Math.abs(den) < 1e-4 ? null : (b * r.direction.dot(w) - n.dot(w)) / den;
+        }
+        function exGrab(e) {
+            if (!ex) return false; setMouse(e);
+            if (!raycaster.intersectObject(ex.cone)[0]) return false;
+            const t = exAxisT(); if (t === null) return false;
+            ex.drag = true; ex.off = (ex.sym ? ex.D / 2 : ex.D) - t; orbitControls.enabled = false; return true;
+        }
+        function exMove(e) {
+            setMouse(e); const t = exAxisT(); if (t === null) return;
+            const tip = Math.round((t + ex.off) * 2) / 2; ex.D = ex.sym ? tip * 2 : tip; exUpdate();
+        }
+        function exEnd() { ex.drag = false; orbitControls.enabled = true; }
+        function exCancel() { if (!ex) return; skRebuild(ex.sk, 0); scene.remove(ex.mesh, ex.arrow, ex.line); orbitControls.enabled = true; ex = null; hidePanel(); }
+        function doExtrude() {
+            if (!ex || !ex.D) return; if (!skShapes(ex.sk, ex.excl).length) { showModal('Extrusion', 'Aucune zone sélectionnée : cliquez une zone de l\'esquisse.'); return; }
+            const s = ex.sk, d = Math.abs(ex.D), m = exMode(), bev = ex.bev, bt = ex.bt, excl = new Set(ex.excl); exCancel();
+            const color = getRandomColor(), mesh = new THREE.Mesh(extrudeGeo(s, d, m, bev, bt, excl), new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.2 }));
+            mesh.matrix.makeBasis(s.u, s.v, s.n).setPosition(s.o); mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale); scene.add(mesh);
+            const obj = { id: 'Body_' + Date.now(), name: 'Extrusion ' + (objectsList.length + 1), type: 'extrude', mesh, params: { dist: d, mode: m, bev, bt }, sk: s, excl, color };
+            objectsList.push(obj); addTimelineStep(`Extrusion de ${s.name}`); updateBrowserTree(); selectObject(obj);
+        }
+
+        // ================= SÉLECTION : corps / faces / arêtes / esquisses =================
+        let selMode = 'body', subVis = null, selSub = null;
+        function setSelMode(m) {
+            selMode = m; deselect(); setTool('none');
+            ['body', 'face', 'edge', 'sketch'].forEach(k => document.getElementById('sel-' + k).classList.toggle('border-orange-500', k === m));
+        }
+        function skRebuild(s, mode, excl) { const v = s.group.visible; scene.remove(s.group); s.group = skGroup(s, mode, excl); s.group.visible = v; scene.add(s.group); }
+        function clearSub() {
+            if (subVis) scene.remove(subVis); subVis = null; selSub = null;
+            if (selSketch) { skRebuild(selSketch, 0); selSketch = null; }
+            document.getElementById('sel-actions').classList.add('hidden');
+        }
+        function selInfo(text, html) {
+            document.getElementById('hud-selection').innerText = text;
+            const el = document.getElementById('sel-actions'); el.innerHTML = html ? `<span class="text-slate-300 mr-2">${text}</span>${html}` : ''; el.classList.toggle('hidden', !html);
+        }
+        const actBtn = (fn, label) => `<button onclick="${fn}" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">${label}</button>`;
+        function pickSub(e) {
+            clearSub(); setMouse(e);
+            const rc = renderer.domElement.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top, vis = objectsList.filter(o => o.mesh.visible);
+            const S = v => { const p = v.clone().project(camera); return [(p.x * 0.5 + 0.5) * rc.width, (-p.y * 0.5 + 0.5) * rc.height]; };
+            const dseg = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((mx - a[0]) * dx + (my - a[1]) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(mx - a[0] - t * dx, my - a[1] - t * dy); };
+            const mat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.55, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 });
+            if (selMode === 'face') {
+                const hit = raycaster.intersectObjects(vis.map(o => o.mesh))[0]; if (!hit) { selInfo('Aucune', ''); return; }
+                const o = vis.find(x => x.mesh === hit.object), m = o.mesh, n = hit.face.normal.clone().transformDirection(m.matrixWorld);
+                const pos = m.geometry.attributes.position, ix = m.geometry.index, V = k => new THREE.Vector3().fromBufferAttribute(pos, ix ? ix.getX(k) : k).applyMatrix4(m.matrixWorld);
+                const arr = []; let area = 0;
+                for (let t = 0; t < (ix ? ix.count : pos.count) / 3; t++) {
+                    const a = V(3 * t), b = V(3 * t + 1), c = V(3 * t + 2), nn = b.clone().sub(a).cross(c.clone().sub(a)), ar = nn.length() / 2; if (ar < 1e-9) continue;
+                    if (nn.normalize().dot(n) > 0.9995 && Math.abs(a.clone().sub(hit.point).dot(n)) < 1e-3) { arr.push(a, b, c); area += ar; }
+                }
+                subVis = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints(arr), mat); scene.add(subVis); selSub = { o, n, pt: hit.point.clone() };
+                selInfo(`Face · ${area.toFixed(2)} mm²`, actBtn('sketchOnFace()', '<i class="fa-solid fa-pen-nib mr-1"></i>Esquisse sur la face') + actBtn("bevelBody('round')", 'Arrondir toutes les arêtes') + actBtn("bevelBody('chamfer')", 'Aplatir toutes les arêtes'));
+            } else if (selMode === 'edge') {
+                let best = null, bd = 9;
+                vis.forEach(o => { const eg = new THREE.EdgesGeometry(o.mesh.geometry, 25).attributes.position;
+                    for (let i = 0; i < eg.count; i += 2) { const a = new THREE.Vector3().fromBufferAttribute(eg, i).applyMatrix4(o.mesh.matrixWorld), b = new THREE.Vector3().fromBufferAttribute(eg, i + 1).applyMatrix4(o.mesh.matrixWorld), d = dseg(S(a), S(b)); if (d < bd) { bd = d; best = { o, a, b }; } } });
+                if (!best) { selInfo('Aucune', ''); return; }
+                subVis = new THREE.Line(new THREE.BufferGeometry().setFromPoints([best.a, best.b]), new THREE.LineBasicMaterial({ color: 0xf97316, depthTest: false })); subVis.renderOrder = 999; scene.add(subVis); selSub = { o: best.o, a: best.a, b: best.b };
+                selInfo(`Arête · ${best.a.distanceTo(best.b).toFixed(2)} mm`, actBtn("edgeBevel('round')", '<i class="fa-solid fa-circle-notch mr-1"></i>Arrondir l\'arête') + actBtn("edgeBevel('chamfer')", '<i class="fa-solid fa-slash mr-1"></i>Aplatir l\'arête'));
+            } else {
+                let best = null, bd = 9;
+                savedSketches.filter(s => s.group.visible).forEach(s => s.ents.forEach((en, i) => { const P = ptsOf(en), n = P.length, W = p => s.o.clone().addScaledVector(s.u, p[0]).addScaledVector(s.v, p[1]);
+                    for (let j = 0; j < (closedEnt(en) ? n : n - 1); j++) { const a = W(P[j]), b = W(P[(j + 1) % n]), d = dseg(S(a), S(b)); if (d < bd) { bd = d; best = { s, i, j, a, b, W, P }; } } }));
+                if (best) { // un côté / une ligne / un cercle
+                    const en = best.s.ents[best.i], whole = en.t === 'circle' || en.t === 'arc', pts = whole ? best.P.map(best.W) : [best.a, best.b];
+                    selSketch = best.s; subVis = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xf97316, depthTest: false })); subVis.renderOrder = 999; scene.add(subVis);
+                    selSub = { sideOf: best };
+                    selInfo(en.t === 'circle' ? `Cercle · Ø ${(2 * en.r).toFixed(2)} mm` : en.t === 'arc' ? `Arc · R ${en.r.toFixed(2)} mm` : `Côté · ${best.a.distanceTo(best.b).toFixed(2)} mm`, actBtn('delSide()', '<i class="fa-solid fa-trash mr-1"></i>Supprimer') + actBtn(`selectSketch(${best.s.id})`, 'Toute l\'esquisse') + actBtn(`openExtrude(${best.s.id})`, 'Extruder'));
+                    return;
+                }
+                const hits = []; // clic à l'intérieur d'un profil : esquisse entière
+                savedSketches.filter(s => s.group.visible).forEach(s => {
+                    const p = new THREE.Vector3(); if (!raycaster.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(s.n, s.o), p)) return;
+                    const d = p.clone().sub(s.o), pt = [d.dot(s.u), d.dot(s.v)]; if (skProfiles(s).some(pr => inPoly(pt, pr.outer))) hits.push({ s, t: p.distanceTo(raycaster.ray.origin) });
+                });
+                if (!hits.length) { selInfo('Aucune', ''); return; }
+                selectSketch(hits.sort((a, b) => a.t - b.t)[0].s.id);
+            }
+        }
+        function sketchOnFace() {
+            if (!selSub || !selSub.n) return; const n = selSub.n.clone(), o = selSub.pt.clone(), Y = new THREE.Vector3(0, 1, 0); let u, v;
+            if (Math.abs(n.dot(Y)) < 0.99) { v = Y.clone().addScaledVector(n, -n.dot(Y)).normalize(); u = v.clone().cross(n); } else { u = new THREE.Vector3(1, 0, 0); v = n.clone().cross(u); }
+            clearSub(); setSelMode('body');
+            enterSketch('face', 0, { key: 'face', u, v, n, o, o0: o.clone(), off: 0, ents: [], id: ++sketchCounter, name: 'Esquisse ' + sketchCounter });
+        }
+        function bevelBody(type) {
+            const o = selSub && selSub.o; if (!o) return;
+            if (o.type !== 'extrude') { showModal('Arrondi / chanfrein', 'Disponible sur les extrusions. Pour les autres corps, arrondissez les coins dans l\'esquisse (outils Congé / Chanfrein) avant d\'extruder.'); return; }
+            o.params = { ...o.params, bev: Math.max(o.params.bev || 0, 1), bt: type };
+            const g = extrudeGeo(o.sk, o.params.dist, o.params.mode, o.params.bev, type, o.excl); o.mesh.geometry.dispose(); o.mesh.geometry = g;
+            setSelMode('body'); selectObject(o); addTimelineStep(`${type === 'round' ? 'Arrondi' : 'Chanfrein'} des arêtes de ${o.name}`);
+        }
+
+
+        // ================= ARRONDI / CHANFREIN D'UNE ARÊTE ISOLÉE =================
+        let ed = null;
+        function clipGeo(geo, pl) { // retire la partie du maillage située du côté positif du plan, puis rebouche la coupe
+            const g = geo.index ? geo.toNonIndexed() : geo, pos = g.attributes.position, out = [], segs = [], E = 1e-6;
+            const P = i => new THREE.Vector3().fromBufferAttribute(pos, i);
+            for (let i = 0; i < pos.count; i += 3) {
+                const v = [P(i), P(i + 1), P(i + 2)], d = v.map(p => pl.distanceToPoint(p)), on = v.filter((p, k) => Math.abs(d[k]) <= E);
+                if (d.every(x => x <= E)) { out.push(...v); if (on.length === 2) segs.push(on); continue; }
+                if (d.every(x => x >= -E)) continue;
+                const poly = [];
+                for (let k = 0; k < 3; k++) {
+                    const a = v[k], b = v[(k + 1) % 3], da = d[k], db = d[(k + 1) % 3];
+                    if (da <= E) poly.push(a);
+                    if ((da < -E && db > E) || (da > E && db < -E)) poly.push(a.clone().lerp(b, da / (da - db)));
+                }
+                for (let k = 1; k < poly.length - 1; k++) out.push(poly[0], poly[k], poly[k + 1]);
+                const cut = poly.filter(p => Math.abs(pl.distanceToPoint(p)) <= 1e-5); if (cut.length >= 2) segs.push([cut[0], cut[cut.length - 1]]);
+            }
+            if (!out.length) return null;
+            const eq = (p, q) => p.distanceTo(q) < 1e-4, loops = [], rest = segs.slice();
+            while (rest.length) {
+                const path = rest.shift().slice(); let closed = false;
+                while (!closed) { const last = path[path.length - 1], i = rest.findIndex(s => eq(s[0], last) || eq(s[1], last)); if (i < 0) break; const s = rest.splice(i, 1)[0]; path.push(eq(s[0], last) ? s[1] : s[0]); closed = eq(path[path.length - 1], path[0]); }
+                if (closed && path.length > 3) { path.pop(); loops.push(path); }
+            }
+            const n = pl.normal, u = (Math.abs(n.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0)).cross(n).normalize(), w = n.clone().cross(u);
+            loops.forEach(L => THREE.ShapeUtils.triangulateShape(L.map(p => new THREE.Vector2(p.dot(u), p.dot(w))), []).forEach(t => {
+                const a = L[t[0]], b = L[t[1]], c = L[t[2]], up = b.clone().sub(a).cross(c.clone().sub(a)).dot(n) >= 0; out.push(a, up ? b : c, up ? c : b);
+            }));
+            const r = new THREE.BufferGeometry().setFromPoints(out); r.computeVertexNormals(); return r;
+        }
+        function edgeInfo(s) {
+            const m = s.o.mesh, g = m.geometry, pos = g.attributes.position, ix = g.index, a = s.a, b = s.b, eq = (p, q) => p.distanceTo(q) < 1e-3, ns = [];
+            const W = k => new THREE.Vector3().fromBufferAttribute(pos, ix ? ix.getX(k) : k).applyMatrix4(m.matrixWorld);
+            for (let t = 0; t < (ix ? ix.count : pos.count) / 3; t++) {
+                const v = [W(3 * t), W(3 * t + 1), W(3 * t + 2)], ia = v.findIndex(p => eq(p, a)), ib = v.findIndex(p => eq(p, b)); if (ia < 0 || ib < 0 || ia === ib) continue;
+                const n = v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).normalize(), q = v[[0, 1, 2].find(i => i !== ia && i !== ib)];
+                if (!ns.some(x => x.n.dot(n) > 0.999)) ns.push({ n, q });
+            }
+            if (ns.length !== 2) return { err: 'Cette arête n\'est pas partagée par exactement deux faces planes : choisissez une arête droite entre deux faces.' };
+            const nA = ns[0].n, nB = ns[1].n, alpha = Math.acos(Math.max(-1, Math.min(1, nA.dot(nB))));
+            if (alpha < 0.05 || alpha > Math.PI - 0.05) return { err: 'Les deux faces sont presque coplanaires : rien à arrondir.' };
+            if (ns[0].q.clone().sub(a).dot(nB) > -1e-6 || ns[1].q.clone().sub(a).dot(nA) > -1e-6) return { err: 'Arête concave (angle rentrant) : l\'arrondi n\'est possible que sur les arêtes convexes.' };
+            const c1 = b.clone().sub(a).normalize(), eg = new THREE.EdgesGeometry(g, 25).attributes.position;
+            for (let i = 0; i < eg.count; i += 2) {
+                const p = new THREE.Vector3().fromBufferAttribute(eg, i).applyMatrix4(m.matrixWorld), q = new THREE.Vector3().fromBufferAttribute(eg, i + 1).applyMatrix4(m.matrixWorld);
+                [[p, q], [q, p]].forEach(([s0, f]) => { const d = f.clone().sub(s0).normalize(); if ((eq(s0, a) && d.dot(c1) < -0.766) || (eq(s0, b) && d.dot(c1) > 0.766)) alpha_curved = true; });
+            }
+            if (alpha_curved) { alpha_curved = false; return { err: 'Arête courbe ou découpée en plusieurs segments : l\'arrondi d\'arête isolée ne gère que les arêtes droites.' }; }
+            return { a, e: c1, nA, nB, alpha };
+        }
+        let alpha_curved = false;
+        function edGeoBuild(st, r) {
+            const { a, e, nA, nB, alpha } = st.inf, inv = st.o.mesh.matrixWorld.clone().invert(), planes = [];
+            const dA = e.clone().cross(nA).normalize(), dB = e.clone().cross(nB).normalize(); if (dA.dot(nB) > 0) dA.negate(); if (dB.dot(nA) > 0) dB.negate();
+            if (st.type === 'chamfer') {
+                const PA = a.clone().addScaledVector(dA, r), PB = a.clone().addScaledVector(dB, r), n = e.clone().cross(PB.clone().sub(PA)).normalize();
+                if (n.dot(nA.clone().add(nB)) < 0) n.negate(); planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, PA));
+            } else {
+                const t = r / Math.tan((Math.PI - alpha) / 2), C = a.clone().addScaledVector(dA, t).addScaledVector(nA, -r), N = 8;
+                for (let k = 0; k < N; k++) {
+                    const f = (k + 0.5) * alpha / N, u = nA.clone().multiplyScalar(Math.sin(alpha - f)).addScaledVector(nB, Math.sin(f)).divideScalar(Math.sin(alpha));
+                    planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(u, C.clone().addScaledVector(u, r)));
+                }
+            }
+            let g = st.geo0; for (const p of planes) { g = clipGeo(g, p.clone().applyMatrix4(inv)); if (!g) return null; } return g;
+        }
+        function edgeBevel(type) {
+            if (!selSub || !selSub.a) return;
+            const inf = edgeInfo(selSub); if (inf.err) { showModal('Arrondi / chanfrein d\'arête', inf.err); return; }
+            edEnd(false); ed = { type, o: selSub.o, inf, geo0: selSub.o.mesh.geometry, geo: null };
+            const v0 = Math.max(0.1, Math.min(2, selSub.a.distanceTo(selSub.b) / 4)).toFixed(2);
+            showPanel(`<div class="font-semibold text-slate-200 mb-2">${type === 'round' ? 'Arrondir l\'arête' : 'Aplatir l\'arête (chanfrein)'}</div>
+                <label class="block text-slate-400">${type === 'round' ? 'Rayon' : 'Distance'} (mm)<input id="ed-v" type="number" step="any" min="0.01" value="${v0}" oninput="edPrev()" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></label>
+                <p id="ed-msg" class="text-red-400 mt-1 h-4"></p>
+                <div class="flex justify-end space-x-2 mt-2"><button onclick="edEnd(false)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">Annuler</button><button onclick="edEnd(true)" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded">Valider</button></div>`);
+            edPrev();
+        }
+        function edPrev() {
+            if (!ed) return; const r = parseFloat(document.getElementById('ed-v').value) || 0, g = r > 0 ? edGeoBuild(ed, r) : null;
+            document.getElementById('ed-msg').innerText = g ? '' : 'Valeur trop grande ou invalide pour cette arête';
+            if (ed.geo) ed.geo.dispose(); ed.geo = g; ed.o.mesh.geometry = g || ed.geo0;
+        }
+        function edEnd(ok) {
+            if (!ed) return; const o = ed.o, t = ed.type;
+            if (ok && ed.geo) { o.type = 'import'; o.params = {}; ed = null; hidePanel(); clearSub(); setSelMode('body'); selectObject(o); addTimelineStep(`${t === 'round' ? 'Arrondi' : 'Chanfrein'} d'une arête de ${o.name}`); return; }
+            o.mesh.geometry = ed.geo0; if (ed.geo) ed.geo.dispose(); ed = null; hidePanel();
+        }
+
+
+        // ================= ESQUISSES : profils, côtés, hauteur, sélection =================
+        const POLYT = ['rect', 'poly', 'pl'];
+        const polyLines = e => { const P = ptsOf(e); return P.map((v, i) => ({ t: 'line', a: v, b: P[(i + 1) % P.length], k: e.k })); };
+                const profShape = pr => { const V = p => p.map(q => new THREE.Vector2(q[0], q[1])), s = new THREE.Shape(V(pr.outer)); pr.holes.forEach(h => s.holes.push(new THREE.Path(V(h)))); return s; };
+        const profHit = (pr, pt) => inPoly(pt, pr.outer) && !pr.holes.some(h => inPoly(pt, h));
+        function skShapes(sk, excl) { return skProfiles(sk).filter((_, i) => !(excl && excl.has(i))).map(profShape); }
+
+        // sélection dans l'esquisse active (Maj = multi-sélection) ; un côté de rectangle / polygone devient une ligne indépendante
+        function skSelect(raw, add) {
+            let bi = -1, bj = 0, bd = skPx() * 10;
+            sketch.ents.forEach((e, i) => {
+                const P = ptsOf(e), n = P.length, m = closedEnt(e) ? n : n - 1;
+                for (let j = 0; j < m; j++) {
+                    const a = P[j], b = P[(j + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((raw[0] - a[0]) * dx + (raw[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)));
+                    const d = Math.hypot(raw[0] - a[0] - t * dx, raw[1] - a[1] - t * dy); if (d < bd) { bd = d; bi = i; bj = j; }
+                }
+            });
+            if (bi < 0) { if (!add) SK.sel = []; skRefresh(); return; }
+            if (POLYT.includes(sketch.ents[bi].t)) {
+                const L = polyLines(sketch.ents[bi]), at = bi; sketch.ents.splice(at, 1, ...L);
+                SK.sel = SK.sel.map(x => x > at ? x + L.length - 1 : x).filter(x => x !== at); bi = at + bj;
+            }
+            const had = SK.sel.indexOf(bi);
+            if (add) { if (had >= 0) SK.sel.splice(had, 1); else SK.sel.push(bi); } else SK.sel = [bi];
+            skRefresh();
+        }
+        function skDeleteSel() { if (!SK.sel.length) return; sketch.ents = sketch.ents.filter((_, i) => !SK.sel.includes(i)); SK.sel = []; skRefresh(); }
+
+        // sélection d'une esquisse enregistrée (clic dans son profil, clic sur un côté, ou depuis l'arborescence)
+        function selectSketch(id) {
+            const s = findSketch(id); if (!s) return; clearSub(); selSketch = s; skRebuild(s, 3);
+            selInfo(s.name, actBtn(`editSketch(${id})`, '<i class="fa-solid fa-pen mr-1"></i>Modifier') + actBtn(`openExtrude(${id})`, '<i class="fa-solid fa-up-long mr-1"></i>Extruder') + actBtn(`openSketchHeight(${id})`, '<i class="fa-solid fa-arrows-up-down mr-1"></i>Hauteur') + actBtn(`deleteSketch(${id})`, '<i class="fa-solid fa-trash mr-1"></i>Supprimer'));
+            updateSketchTree();
+        }
+        function pickSketchAt(e) {
+            const m = selMode; selMode = 'sketch'; pickSub(e); selMode = m;
+            if (!selSketch) return false;
+            selectedObject = null; transformControls.detach(); updateBrowserTree(); resetInspector(); return true;
+        }
+        function delSide() {
+            const b = selSub && selSub.sideOf; if (!b) return; const s = b.s, en = s.ents[b.i];
+            if (POLYT.includes(en.t)) { const L = polyLines(en); L.splice(b.j, 1); s.ents.splice(b.i, 1, ...L); } else s.ents.splice(b.i, 1);
+            clearSub(); if (!s.ents.length) { deleteSketch(s.id); return; }
+            skRebuild(s, 0); addTimelineStep(`Suppression d'une ligne de ${s.name}`); updateSketchTree();
+        }
+
+        // ================= HAUTEUR D'UNE ESQUISSE =================
+        function skMoveTo(s, v) { if (!s.o0) s.o0 = s.o.clone().addScaledVector(s.n, -(s.off || 0)); const old = s.o.clone(); s.off = v; s.o = s.o0.clone().addScaledVector(s.n, v); return s.o.clone().sub(old); }
+        function skHeightSet(id, v) {
+            const val = parseFloat(v); if (!isFinite(val)) return;
+            if (id === 'active') { if (!sketch) return; const d = skMoveTo(sketch, val); camera.position.add(d); orbitControls.target.add(d); setGridPlane(sketch); skRefresh(); return; }
+            const s = findSketch(id); if (!s) return; skMoveTo(s, val); skRebuild(s, s === selSketch ? 3 : 0);
+        }
+        function openSketchHeight(id) {
+            const s = findSketch(id); if (!s) return;
+            showPanel(`<div class="font-semibold text-slate-200 mb-2"><i class="fa-solid fa-arrows-up-down text-orange-400 mr-1"></i>Hauteur de ${esc(s.name)}</div>
+                <label class="block text-slate-400">Décalage le long de la normale du plan (mm)<input id="sh-v" type="number" step="any" value="${+(s.off || 0).toFixed(3)}" oninput="skHeightSet(${id}, this.value)" class="w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200"></label>
+                <div class="flex gap-1 mt-2">${[-10, -1, 1, 10].map(d => `<button onclick="shStep(${id}, ${d})" class="flex-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">${d > 0 ? '+' : ''}${d}</button>`).join('')}</div>
+                <div class="flex justify-end mt-3"><button onclick="shDone(${id})" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded">OK</button></div>`);
+        }
+        function shStep(id, d) { const el = document.getElementById('sh-v'), v = (parseFloat(el.value) || 0) + d; el.value = +v.toFixed(3); skHeightSet(id, v); }
+        function shDone(id) { const s = findSketch(id); hidePanel(); if (s) addTimelineStep(`Hauteur de ${s.name} : ${+(s.off || 0).toFixed(2)} mm`); }
+
+        // ================= EXTRUSION : choix de l'esquisse et des zones =================
+        function openExtrude(id) {
+            if (sketchMode) { showModal('Esquisse en cours', 'Cliquez sur « Terminer » avant d\'extruder.'); return; }
+            const s = findSketch(id) || selSketch || savedSketches[savedSketches.length - 1];
+            if (!s) { showModal('Extrusion', 'Créez d\'abord une esquisse (menu Esquisse), puis terminez-la.'); return; }
+            if (!skProfiles(s).length) { showModal('Extrusion', `${s.name} ne contient aucun profil fermé (rectangle, cercle, polygone ou lignes/arcs formant une boucle).`); return; }
+            exCancel(); clearSub(); exStart(s);
+        }
+        function exStart(s, keep) {
+            const pts = skProfiles(s).flatMap(p => p.outer), c2 = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
+            ex = Object.assign({ sk: s, D: 10, sym: false, bev: 0, bt: 'round', excl: new Set(), c: s.o.clone().addScaledVector(s.u, c2[0]).addScaledVector(s.v, c2[1]) }, keep || {});
+            ex.mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: 0xf97316, transparent: true, opacity: 0.55, roughness: 0.4 }));
+            ex.mesh.matrixAutoUpdate = false; ex.mesh.matrix.makeBasis(s.u, s.v, s.n).setPosition(s.o);
+            ex.arrow = new THREE.Group(); ex.cone = new THREE.Mesh(new THREE.ConeGeometry(1.6, 4.5, 20), new THREE.MeshBasicMaterial({ color: 0xfbbf24, depthTest: false }));
+            ex.cone.position.y = 2.25; ex.cone.renderOrder = 999; ex.arrow.add(ex.cone);
+            ex.line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xfbbf24, depthTest: false })); ex.line.renderOrder = 999;
+            scene.add(ex.mesh, ex.arrow, ex.line); skRebuild(s, 0, ex.excl);
+            const inp = 'w-full bg-slate-800 border border-fusion-border rounded px-2 py-1 mt-1 text-slate-200';
+            const opts = savedSketches.filter(x => skProfiles(x).length).map(x => `<option value="${x.id}" ${x === s ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+            showPanel(`<div class="font-semibold text-slate-200 mb-2"><i class="fa-solid fa-up-long text-orange-400 mr-1"></i>Extrusion <span class="text-slate-500 font-normal">· tirez la flèche jaune</span></div>
+                <label class="block text-slate-400">Esquisse à extruder<select id="ex-sk" onchange="exSwitch(this.value)" class="${inp}">${opts}</select></label>
+                <p class="text-slate-500 mt-1">Cliquez une zone de l'esquisse pour l'inclure / l'exclure : <b id="ex-n" class="text-slate-300"></b></p>
+                <label class="block text-slate-400 mt-2">Distance (mm, négatif = sens inverse)<input id="ex-d" type="number" step="any" value="${ex.D}" oninput="exSet()" class="${inp}"></label>
+                <label class="flex items-center space-x-2 mt-2 text-slate-300"><input type="checkbox" id="ex-s" ${ex.sym ? 'checked' : ''} onchange="exSet()"><span>Symétrique</span></label>
+                <label class="block text-slate-400 mt-2">Arrondi / chanfrein des arêtes (mm)<input id="ex-b" type="number" step="any" min="0" value="${ex.bev}" oninput="exSet()" class="${inp}"></label>
+                <select id="ex-t" onchange="exSet()" class="${inp}"><option value="round" ${ex.bt === 'round' ? 'selected' : ''}>Arrondi</option><option value="chamfer" ${ex.bt === 'chamfer' ? 'selected' : ''}>Chanfrein</option></select>
+                <div class="flex justify-end space-x-2 mt-3"><button onclick="exCancel()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-fusion-border rounded">Annuler</button><button onclick="doExtrude()" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded">Extruder</button></div>`);
+            exUpdate();
+        }
+        function exSwitch(id) { const k = { D: ex.D, sym: ex.sym, bev: ex.bev, bt: ex.bt }, s = findSketch(+id); exCancel(); if (s) exStart(s, k); }
+        function exPick(e) {
+            setMouse(e); const s = ex.sk, p = new THREE.Vector3();
+            if (!raycaster.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(s.n, s.o), p)) return;
+            const d = p.sub(s.o), pt = [d.dot(s.u), d.dot(s.v)], i = skProfiles(s).findIndex(pr => profHit(pr, pt)); if (i < 0) return;
+            if (ex.excl.has(i)) ex.excl.delete(i); else ex.excl.add(i);
+            skRebuild(s, 0, ex.excl); exUpdate();
+        }
+
+        // ================= ICÔNES : type de corps, étape d'historique =================
+        const BODY_ICON = { box: 'cube', cylinder: 'database', sphere: 'circle', cone: 'mountain', torus: 'ring', extrude: 'layer-group', import: 'cubes' };
+        function stepIcon(n) {
+            const t = n.toLowerCase(), has = k => t.includes(k);
+            return has('extrusion') ? 'up-long' : has('esquisse') && has('hauteur') ? 'arrows-up-down' : has('hauteur') ? 'arrows-up-down' : has('esquisse') ? 'pen-nib' : has('import') ? 'file-import' : has('suppression') || has('supprim') ? 'trash' : has('échelle') ? 'up-right-and-down-left-from-center' : has('rotation') ? 'rotate' : has('transformation') ? 'arrows-up-down-left-right' : has('copie') ? 'clone' : has('arrondi') ? 'circle-notch' : has('chanfrein') ? 'slash' : has('initialisation') ? 'flag' : has('effac') ? 'eraser' : 'cube';
+        }
+
+
+        // ================= PROFILS : toutes les zones délimitées par des traits (arrangement planaire) =================
+        function skProfiles(sk) {
+            const key = JSON.stringify(sk.ents) + '|' + ((sketchMode && sketch) ? Math.round(Math.log2(skPx()) * 2) : 'x');
+            if (sk._pc && sk._pc.key === key) return sk._pc.val;
+            const val = skArrange(sk); sk._pc = { key, val }; return val;
+        }
+        function skArrange(sk) {
+            const TAU = 2 * Math.PI, TOL = 1e-4, d2 = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]), cl = t => Math.max(0, Math.min(1, t));
+            // 1) primitives : segments et arcs/cercles ; les rectangles/polygones sont décomposés en segments
+            const prim = [];
+            sk.ents.forEach(e => {
+                if (e.k) return;
+                if (e.t === 'line') { if (d2(e.a, e.b) > TOL) prim.push({ s: 1, a: e.a, b: e.b }); }
+                else if (e.t === 'arc') prim.push({ c: e.c, r: e.r, a0: e.a0, sw: e.sw });
+                else if (e.t === 'circle') prim.push({ c: e.c, r: e.r, a0: 0, sw: TAU });
+                else polyLines(e).forEach(l => { if (d2(l.a, l.b) > TOL) prim.push({ s: 1, a: l.a, b: l.b }); });
+            });
+            const at = (p, t) => p.s ? [p.a[0] + (p.b[0] - p.a[0]) * t, p.a[1] + (p.b[1] - p.a[1]) * t] : [p.c[0] + p.r * Math.cos(p.a0 + p.sw * t), p.c[1] + p.r * Math.sin(p.a0 + p.sw * t)];
+            const tOn = (p, q) => { // paramètre d'un point appartenant à la primitive, sinon null
+                if (p.s) { const dx = p.b[0] - p.a[0], dy = p.b[1] - p.a[1], t = cl(((q[0] - p.a[0]) * dx + (q[1] - p.a[1]) * dy) / (dx * dx + dy * dy)); return d2(at(p, t), q) < TOL ? t : null; }
+                if (Math.abs(d2(q, p.c) - p.r) > TOL) return null;
+                const ang = Math.atan2(q[1] - p.c[1], q[0] - p.c[0]), dd = (((p.sw >= 0 ? ang - p.a0 : p.a0 - ang) % TAU) + TAU) % TAU, t = dd / Math.abs(p.sw);
+                return t <= 1 + 1e-9 ? Math.min(t, 1) : (TAU - dd < 1e-7 ? 0 : null);
+            };
+            const cuts = prim.map(() => [0, 1]);
+            const add = (i, j, q) => { const a = tOn(prim[i], q), b = tOn(prim[j], q); if (a !== null && b !== null) { cuts[i].push(a); cuts[j].push(b); } };
+            for (let i = 0; i < prim.length; i++) for (let j = i + 1; j < prim.length; j++) {
+                const A = prim[i], B = prim[j];
+                [[i, j], [j, i]].forEach(([x, y]) => [at(prim[x], 0), at(prim[x], 1)].forEach(E => { const t = tOn(prim[y], E); if (t !== null) cuts[y].push(t); })); // extrémité posée sur un autre trait
+                if (A.s && B.s) {
+                    const r1 = [A.b[0] - A.a[0], A.b[1] - A.a[1]], r2 = [B.b[0] - B.a[0], B.b[1] - B.a[1]], den = r1[0] * r2[1] - r1[1] * r2[0];
+                    if (Math.abs(den) > 1e-12) { const w = [B.a[0] - A.a[0], B.a[1] - A.a[1]], t = (w[0] * r2[1] - w[1] * r2[0]) / den, u = (w[0] * r1[1] - w[1] * r1[0]) / den; if (t > -1e-9 && t < 1 + 1e-9 && u > -1e-9 && u < 1 + 1e-9) { cuts[i].push(cl(t)); cuts[j].push(cl(u)); } }
+                } else if (A.s !== B.s) {
+                    const S = A.s ? A : B, C = A.s ? B : A, d = [S.b[0] - S.a[0], S.b[1] - S.a[1]], f = [S.a[0] - C.c[0], S.a[1] - C.c[1]], a2 = d[0] * d[0] + d[1] * d[1], b2 = 2 * (f[0] * d[0] + f[1] * d[1]), c2 = f[0] * f[0] + f[1] * f[1] - C.r * C.r, disc = b2 * b2 - 4 * a2 * c2;
+                    if (disc >= -1e-9) { const sq = Math.sqrt(Math.max(0, disc)); [(-b2 - sq) / (2 * a2), (-b2 + sq) / (2 * a2)].forEach(t => { if (t > -1e-9 && t < 1 + 1e-9) add(i, j, at(S, cl(t))); }); }
+                } else {
+                    const dx = B.c[0] - A.c[0], dy = B.c[1] - A.c[1], d = Math.hypot(dx, dy);
+                    if (d > 1e-9 && d <= A.r + B.r + TOL && d >= Math.abs(A.r - B.r) - TOL) {
+                        const a = (A.r * A.r - B.r * B.r + d * d) / (2 * d), h = Math.sqrt(Math.max(0, A.r * A.r - a * a)), mx = A.c[0] + a * dx / d, my = A.c[1] + a * dy / d;
+                        [[mx - h * dy / d, my + h * dx / d], [mx + h * dy / d, my - h * dx / d]].forEach(q => add(i, j, q));
+                    }
+                }
+            }
+            // 2) découpe des primitives aux intersections → arêtes du graphe
+            const nodes = [], nid = p => { let i = nodes.findIndex(q => d2(q, p) < TOL); if (i < 0) { nodes.push(p.slice()); i = nodes.length - 1; } return i; };
+            const edges = [], seen = new Set();
+            prim.forEach((p, i) => {
+                const uniq = [0]; cuts[i].filter(t => t > 1e-9 && t < 1 - 1e-9).sort((x, y) => x - y).forEach(t => { const q = at(p, t); if (d2(q, at(p, uniq[uniq.length - 1])) > TOL && d2(q, at(p, 1)) > TOL) uniq.push(t); });
+                uniq.push(1);
+                for (let k = 0; k < uniq.length - 1; k++) {
+                    const t0 = uniq[k], t1 = uniq[k + 1], a = nid(at(p, t0)), b = nid(at(p, t1)); let pts;
+                    if (p.s) pts = [nodes[a].slice(), nodes[b].slice()];
+                    else { const N = Math.max(4, Math.ceil(Math.abs(p.sw) * (t1 - t0) / TAU * circN(p.r))); pts = Array.from({ length: N + 1 }, (_, m) => at(p, t0 + (t1 - t0) * m / N)); pts[0] = nodes[a].slice(); pts[N] = nodes[b].slice(); }
+                    if (a === b && p.s) continue;
+                    const mid = p.s ? [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2] : pts[pts.length >> 1], key = Math.min(a, b) + '-' + Math.max(a, b) + '|' + mid.map(v => Math.round(v * 1000)).join(',');
+                    if (!seen.has(key)) { seen.add(key); edges.push({ a, b, pts }); }
+                }
+            });
+            // 3) on retire les traits « pendants » (qui ne ferment aucune zone)
+            let alive = edges;
+            for (;;) {
+                const deg = new Map(); alive.forEach(e => { deg.set(e.a, (deg.get(e.a) || 0) + 1); deg.set(e.b, (deg.get(e.b) || 0) + 1); });
+                const keep = alive.filter(e => deg.get(e.a) > 1 && deg.get(e.b) > 1); if (keep.length === alive.length) break; alive = keep;
+            }
+            // 4) demi-arêtes triées par angle, puis parcours des faces
+            const he = [], out = new Map(), par = nodes.map((_, i) => i), find = x => par[x] === x ? x : (par[x] = find(par[x]));
+            alive.forEach(e => {
+                const f = { from: e.a, to: e.b, pts: e.pts }, r = { from: e.b, to: e.a, pts: e.pts.slice().reverse() }; f.twin = r; r.twin = f;
+                [f, r].forEach(h => { h.ang = Math.atan2(h.pts[1][1] - h.pts[0][1], h.pts[1][0] - h.pts[0][0]); he.push(h); if (!out.has(h.from)) out.set(h.from, []); out.get(h.from).push(h); });
+                par[find(e.a)] = find(e.b);
+            });
+            out.forEach(l => l.sort((x, y) => x.ang - y.ang));
+            const nextH = h => { const L = out.get(h.to), i = L.indexOf(h.twin); return L[(i - 1 + L.length) % L.length]; };
+            const used = new Set(), faces = [], outers = [];
+            he.forEach(h0 => {
+                if (used.has(h0)) return; const pts = []; let h = h0, g = 0;
+                do { used.add(h); for (let m = 0; m < h.pts.length - 1; m++) pts.push(h.pts[m]); h = nextH(h); } while (h !== h0 && ++g < 200000);
+                const area = polyArea(pts), L = { pts, area: Math.abs(area), comp: find(h0.from), holes: [] };
+                if (area > 1e-6) faces.push(L); else if (area < -1e-6) outers.push(L);
+            });
+            // 5) un ensemble de traits isolé, situé dans une zone d'un autre ensemble, devient un trou de cette zone
+            outers.forEach(o => {
+                const host = faces.filter(f => f.comp !== o.comp && inPoly(o.pts[0], f.pts)).sort((x, y) => x.area - y.area)[0];
+                if (host) host.holes.push(o.pts);
+            });
+            return faces.map(f => ({ outer: f.pts, holes: f.holes }));
+        }
+
+        window.onload = initCAD;
+    </script>
+</body>
+</html>
